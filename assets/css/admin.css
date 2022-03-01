@@ -1,0 +1,52 @@
+.vabs_update_notification {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: auto;
+    padding: 1rem;
+    background: #f5f5f5;
+    z-index: 9999
+}
+
+#vabs-container-body input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    -webkit-appearance: checkbox !important;
+    box-shadow: none !important;
+}
+
+#vabs-container-body input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    -webkit-appearance: radio !important;
+    box-shadow: none !important;
+}
+
+#vabs-container {
+    /*height: 100%;*/
+    background-color: #EEEEEE;
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-left: 5px;
+    padding: 20px;
+}
+
+#vabs-container input {
+    height: 25px;
+}
+
+#vabs-container-logo {
+    text-align: center;
+    border-bottom: 1px solid black;
+    padding-bottom: 20px;
+}
+
+#vabs-container-body {
+    margin-top: 20px;
+}
+
+.shortcodegenerator-row {
+    margin-top: 20px;
+}

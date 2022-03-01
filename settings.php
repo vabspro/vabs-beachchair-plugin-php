@@ -1,0 +1,17 @@
+<?php $settings = [
+	'apiToken'           => '',
+	'apiClientId'        => '',
+	'apiURL'             => '',
+	'referrerId'         => 0,
+	'dsgvoLink'          => '',
+	'agbLink'            => '',
+	'redirectLink'       => '',
+	'payPal'             => 0,
+	'payPalSandbox'      => 1,
+	'payPalClientId'     => '',
+	'payPalClientSecret' => '',
+	'textBeforeBooking'  => '',
+	'zoom'               => 15,
+	'latCenter'          => '',
+	'lonCenter'          => '',
+];

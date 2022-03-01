@@ -1,0 +1,301 @@
+select
+  font-size: 16px
+
+#bookingContainer
+
+  font-size: 16px
+
+  h3
+    font-size: 1.4em
+    font-weight: bold
+  h5
+    font-size: 1.2em
+
+.flatpickr-monthDropdown-months
+  //font-size: 14px !important
+
+.flatpickr-current-month
+  padding-top: 0 !important
+
+/* MAP */
+
+.container
+  padding-top: 20px !important
+  padding-bottom: 20px !important
+
+  #errorMessage
+    padding-top: 20px
+
+.row
+  margin-bottom: 20px
+
+textarea
+  width: 100%
+
+.dateFrom
+  width: 250px !important
+
+#locationSelect
+  padding-bottom: 15px
+
+#leafLetMap
+  width: 100%
+  height: 480px
+  border-radius: 10px !important
+  margin-top: 20px
+  display: none
+
+
+#flexMap
+
+  width: 100%
+  height: 480px
+  border-radius: 15px
+  position: relative
+  display: none
+
+  .flexContainer
+
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background-color: #abd3e0
+    z-index: 400
+    border-radius: inherit
+
+    .flexTopContainer
+
+      flex: 1 1 0
+      display: flex
+      align-items: center
+      justify-content: center
+      height: 45%
+
+      .flexHeadline
+        position: absolute
+        text-align: center
+        font-size: 2.4rem
+        top: 10%
+
+      .flexBtnBack
+        position: absolute
+        right: 15px
+        top: 15px
+
+
+    .flexRowContainer
+      //padding: 2rem
+      background-color: #f2e9ac
+      min-width: 100%
+      //display: flex
+      grid-template-columns: repeat(1, 1fr)
+      //grid-row-gap: 0.5rem
+      height: 60%
+      overflow: auto
+      border-bottom-right-radius: 15px
+      border-bottom-left-radius: 15px
+
+      .flexRows
+        padding: 2rem
+        background-color: #f2e9ac
+        min-width: 100%
+        display: grid
+        grid-template-columns: repeat(1, 1fr)
+        grid-row-gap: 5px
+        grid-column-gap: 5px
+
+        .flexRow
+          display: flex
+          align-items: center
+          justify-content: flex-start
+
+          .flexChair
+            height: 55px
+            width: 55px
+            margin-right: 0.4rem
+            background-color: yellowgreen
+            border-radius: 0.4rem
+            display: flex
+            align-items: center
+            justify-content: center
+            cursor: pointer
+            position: relative
+            //font-size: 12px
+            //text-align: center
+            box-sizing: border-box
+            flex-direction: column
+
+            .flexChairNumber
+              font-weight: bold
+              height: 16px
+              line-height: 16px
+              font-size: 18px
+
+            .flexChairType
+              font-weight: bold
+              font-size: 10px
+              height: 16px
+              line-height: 16px
+
+            .flexChairRowName
+              font-weight: bold
+              font-size: 10px
+              height: 12px
+              line-height: 12px
+
+            i
+              position: absolute
+              top: -8px
+              right: -8px
+              height: 16px
+              width: 16px
+              border-radius: 50%
+              background-color: black
+              z-index: 100
+
+          .booked
+            background-color: red
+            color: white
+            opacity: 1
+            cursor: not-allowed
+
+        .notOnline .flexChair
+          background-color: dimgrey !important
+          color: white
+          cursor: not-allowed
+
+        .rtl
+          flex-direction: row-reverse
+
+        .L2R
+          justify-content: flex-start
+        .R2L
+          justify-content: flex-end
+        .Center
+          justify-content: center
+
+
+#chair-card
+  position: absolute
+  top: 0
+  left: 0
+  height: 100%
+  width: 100%
+  background-color: rgba(0, 0, 0, .25)
+  z-index: 200
+
+  .chair-container
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+    width: 240px
+    //height: 300px
+    border-radius: 0.4rem
+    background-color: #fff
+    overflow: hidden
+    display: flex
+    flex-direction: column
+
+    .btnChairClose
+      margin: 5px
+      left: 50%
+
+    .chair-header
+      background-color: #f5f5f5
+      height: 160px
+      min-height: 160px
+      //background-image: url('')
+      background-size: contain
+      background-repeat: no-repeat
+      background-position: center center
+
+    .chair-body
+      flex: 1
+      padding: 1rem
+      display: flex
+      flex-direction: column
+      justify-content: space-between
+
+#shoppingCartContainer
+  border: 1px solid rgba(0, 0, 0, .1)
+  border-radius: 0.4rem
+  background-color: #EFEFEF
+  padding: 20px
+
+  #shoppingCartDateTimeRange
+    font-weight: bold
+
+  label
+    cursor: pointer
+
+  #shoppingCartHeader, #shoppingCartList
+    position: relative
+    padding: 1rem 0
+    border-bottom: 1px solid rgba(0, 0, 0, .1)
+
+    ul
+      padding: 0
+      margin: 0
+      list-style: none
+
+      li
+        display: flex
+        align-items: center
+        justify-content: space-between
+
+        strong
+          margin: 0
+          display: block
+          text-transform: none
+
+        em
+          font-size: 10px
+          margin-top: 1px
+
+      li:last-child
+        border-top: 1px solid rgba(0, 0, 0, .1)
+        padding-top: 10px
+  input
+    margin-right: 1rem
+
+#btnOrderNow
+  background-color: #198754 !important
+  color: white
+
+#personalDataContainer
+
+  margin-top: 20px
+
+  input
+    width: 100%
+
+.form-check-input
+  width: 20px !important
+#paymentSection
+  vertical-align: middle !important
+  line-height: 32px
+.no-padding-left
+  padding-left: 0
+
+.flatpickr-month, .flatpickr-monthDropdown-months
+  height: 50px !important
+
+.flatpickr-current-month
+
+
+.flatpickr-next-month
+
+  .flatpickr-next-month
+    padding: 5px !important
+
+
+
+
+
+
+
+
+
