@@ -14,4 +14,7 @@
 	'zoom'               => 15,
 	'latCenter'          => '',
 	'lonCenter'          => '',
+	'smtpHost' => '',
+	'smtpUser' => '',
+	'smtpPass' => '',
 ];

@@ -40,6 +40,9 @@ jQuery(document).ready(function ($) {
         let zoom = $('#zoom').val();
         let latCenter = $('#latCenter').val();
         let lonCenter = $('#lonCenter').val();
+        let smtpServer = $('#smtpServer').val();
+        let smtpUser = $('#smtpUser').val();
+        let smtpPass = $('#smtpPass').val();
 
         console.log({payPal});
         console.log({payPalSandbox});
@@ -83,6 +86,9 @@ jQuery(document).ready(function ($) {
                     zoom: zoom,
                     latCenter: latCenter,
                     lonCenter: lonCenter,
+                    smtpServer: smtpServer,
+                    smtpUser: smtpUser,
+                    smtpPass: smtpPass,
 
                 },
 

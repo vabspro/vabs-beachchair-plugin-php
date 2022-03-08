@@ -27,7 +27,12 @@ class Settings
 
 	public string $textBeforeBooking  = '';
 
-	//LOads the settings from a settings file
+	//SMTP
+	public string $smtpServer  = '';
+	public string $smtpUser  = '';
+	public string $smtpPass  = '';
+
+	//Loads the settings from a settings file
 
 	/**
 	 * Loads settings from a file or create empty settings file if settings file doesn't exists
@@ -53,6 +58,9 @@ class Settings
 				'zoom' => 15,
 				'latCenter' => '',
 				'lonCenter' => '',
+				'smtpServer' => '',
+				'smtpUser' => '',
+				'smtpPass' => '',
 			];
 			$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');
 			if($write === false){
@@ -104,6 +112,9 @@ class Settings
 			'zoom' => $this->zoom ?? 1,
 			'latCenter' => $this->latCenter ?? '',
 			'lonCenter' => $this->lonCenter ?? '',
+			'smtpServer' => $this->smtpServer ?? '',
+			'smtpUser' => $this->smtpUser ?? '',
+			'smtpPass' => $this->smtpPass ?? '',
 		];
 
 		$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');

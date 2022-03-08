@@ -67,6 +67,9 @@ try {
 		$Config->zoom  = $_POST['zoom'] ? : 15;
 		$Config->latCenter  = $_POST['latCenter'] ? : '';
 		$Config->lonCenter  = $_POST['lonCenter'] ? : '';
+		$Config->smtpServer  = $_POST['smtpServer'] ? : '';
+		$Config->smtpUser  = $_POST['smtpUser'] ? : '';
+		$Config->smtpPass  = $_POST['smtpPass'] ? : '';
 		if (!$Config->Save ()) {
 			throw new Exception("Data could not be saved");
 		}
@@ -651,6 +654,9 @@ try {
 
 			}
 
+		}else{
+			$API = new API();
+			$API->SendInvoice ($salesHeaderId);
 		}
 
 		#endregion

@@ -10,6 +10,7 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
 use PayPalHttp\HttpException;
+use PayPalHttp\IOException;
 
 class Plugin
 {
@@ -292,8 +293,28 @@ class Plugin
 						<select class="border bg-light col-3 form-control" id="referrerId"><!-- via AJAX --></select>
 					</div>
 				</div>
+
+				<h3>Email Debug</h3>
 				<div class="form-group row">
-					<label for="redirectLink" class="col-sm-2 col-form-label">Success Page:</label>
+					<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
+					<div class="col-sm-10">
+						<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $settings['smtpServer'] ?? ''; ?>">
+					</div>
+
+					<label for="smtpUser" class="col-sm-2 col-form-label">User:</label>
+					<div class="col-sm-10">
+						<input type="text" class="border bg-light form-control" id="smtpUser" value="<?php echo $settings['smtpUser'] ?? ''; ?>">
+					</div>
+
+					<label for="smtpPass" class="col-sm-2 col-form-label">Pass:</label>
+					<div class="col-sm-10">
+						<input type="password" class="border bg-light form-control" id="smtpPass" value="<?php echo $settings['smtpPass'] ?? ''; ?>">
+					</div>
+				</div>
+
+				<h3>Success/Erfolg</h3>
+				<div class="form-group row">
+					<label for="redirectLink" class="col-sm-2 col-form-label">Success/Erfolgs-Page:</label>
 					<div class="col-sm-6">
 						<input type="text" class="border bg-light form-control" id="redirectLink" value="<?php echo $settings['redirectLink'] ?? ''; ?>">
 					</div>
@@ -368,6 +389,10 @@ class Plugin
 			$settings = $Settings->Load ();
 			$isSandBox = (int)$settings['payPalSandbox'] === 1;
 
+			define("SMTP_USER",$settings['smtpUser']);
+			define("SMTP_PASS",$settings['smtpPass']);
+			define("SMTP_SERVER",$settings['smtpServer']);
+
 			if(!empty($token) && !empty($PayerID)){
 
 				if ($isSandBox) {
@@ -390,16 +415,11 @@ class Plugin
 					$request  = new OrdersGetRequest($token);
 					$response = $client->execute ($request);
 
-					/*$response = $client->execute($request);*/
-					try {
-						$var = print_r ($response, true);
-						Mailer::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
-					} catch (Exception $e) {
+					$var = print_r ($response, true);
+					Mailer::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
 
-						Mailer::SendAdminMail ("File: ".__FILE__."<br>Error: ".$e->getMessage (), Mailer::EMAIL_SUBJECT_EXCEPTION);
-					}
 
-				} catch (HttpException|IOException $e) {
+				} catch (HttpException $e) {
 
 					$statusCode = $e->statusCode;
 					if ($statusCode == 422) {
@@ -433,19 +453,21 @@ class Plugin
 
 				}
 
+				if(!empty($captureId)){
+					$API = new API();
+					$API->PostPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+					$API->PutUpdateSalesInvoice ($salesHeaderId, $salesInvoiceId, 5);
+					$API = new API();
+					$API->SendInvoice ($salesHeaderId);
 
+					echo "<script type=\"text/javascript\">window.location = '".$settings['redirectLink']."';</script>";
+				}else{
+					Log::Log ("Capture ID was empty or couldn't get");
+				}
 
-				$Settings = new Settings();
-				$settings = $Settings->Load ();
-				$API = new API();
-				$API->PostPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
-				$API->PutUpdateSalesInvoice ($salesHeaderId, $salesInvoiceId, 5);
-
-				echo "<script type=\"text/javascript\">
-    			window.location = '".$settings['redirectLink']."';
-				</script>";
 
 			}
+
 
 			ob_start ();
 			?>

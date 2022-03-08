@@ -298,4 +298,15 @@ class API
 
 	}
 
+	public function SendInvoice (int $salesHeaderId) {
+
+		$requestUrl = '/sales/invoice/send';
+
+		return $this->SendPostCurlRequest ($requestUrl, [
+			'sales_header_id'  => $salesHeaderId,
+
+		]);
+
+	}
+
 }
