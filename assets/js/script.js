@@ -1100,19 +1100,19 @@ jQuery(document).ready(function ($) {
      * LEAF LET MAP *
      ****************/
 
-    let DrawLeafLetMap = function (targetNodeId, data, bookableLocationArray) {
+    let markers = [];
 
-        //$('#' + targetNodeId).html('');
+    let DrawLeafLetMap = function (targetNodeId, data, bookableLocationArray) {
 
         if (map != null) {
             map.remove();
         }
 
-        console.log("using Lat: " + latCenter + " Lon:" + lonCenter);
+        //console.log("using Lat: " + latCenter + " Lon:" + lonCenter);
 
         map = L.map(targetNodeId, {
-            center: [latCenter, lonCenter],
-            zoom: zoomLevel,
+            //center: [latCenter, lonCenter],
+            //zoom: zoomLevel,
             //dragging: false,
             scrollWheelZoom: false,
             bounds: null,
@@ -1138,6 +1138,8 @@ jQuery(document).ready(function ($) {
             window.dispatchEvent(new Event('resize'));
         }, 100);
 
+        map.fitBounds(markers);
+
     }
 
     let AddMarker = function (id, title, lat, lng, seasonFromFormatted, seasonToFormatted, bookableLineArray) {
@@ -1162,7 +1164,11 @@ jQuery(document).ready(function ($) {
             })
             .on('mouseover', function () {
                 mearker.openPopup();
-            })
+            });
+
+        markers.push([lat,lng]);
+
+        //console.log(markers);
 
 
     }

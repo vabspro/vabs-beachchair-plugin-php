@@ -2,8 +2,8 @@
 
 namespace VABS;
 
+use DD\Exceptions\ValidationException;
 use DD\Helper\Date;
-use DD\Helper\Strings;
 use Exception;
 
 class API
@@ -139,6 +139,11 @@ class API
 
 	}
 
+	/**
+	 * @param string $dateFrom
+	 * @param string $dateTo
+	 * @return bool|string
+	 */
 	public function GetLocations (string $dateFrom = "", string $dateTo = "") {
 
 		$requestUrl = '/beachchair/location';
@@ -155,6 +160,9 @@ class API
 
 	}
 
+	/**
+	 * @return bool|string
+	 */
 	public function GetBeachChairTypes () {
 
 		$requestUrl = '/beachchair/type';
@@ -163,6 +171,11 @@ class API
 
 	}
 
+	/**
+	 * @param string $dateFrom
+	 * @param string $dateTo
+	 * @return bool|string
+	 */
 	public function GetBookableLocations (string $dateFrom, string $dateTo) {
 
 		$requestUrl = "/beachchair/location/bookable/".$dateFrom."/".$dateTo;
@@ -171,6 +184,12 @@ class API
 
 	}
 
+	/**
+	 * @param string $dateFrom
+	 * @param string $dateTo
+	 * @param int $locationId
+	 * @return bool|string
+	 */
 	public function GetFreeChairs (string $dateFrom, string $dateTo, int $locationId) {
 
 		if(empty($locationId)){
@@ -183,6 +202,10 @@ class API
 
 	}
 
+	/**
+	 * @param int $id
+	 * @return bool|string
+	 */
 	public function GetRows (int $id = 0) {
 
 		$requestUrl = '/beachchair/row';
@@ -195,6 +218,13 @@ class API
 
 	}
 
+	/**
+	 * @param $id
+	 * @param $dateFrom
+	 * @param $dateTo
+	 * @return bool|string
+	 * @throws ValidationException
+	 */
 	public function GetPrice ($id, $dateFrom, $dateTo) {
 
 		$requestUrl = sprintf('/beachchair/price/%d/%s/%s',$id,Date::FormatDateToFormat ($dateFrom, Date::DATE_FORMAT_SQL_DATE),Date::FormatDateToFormat ($dateTo, Date::DATE_FORMAT_SQL_DATE));
@@ -203,6 +233,10 @@ class API
 
 	}
 
+	/**
+	 * @param Contact $Contact
+	 * @return bool|string
+	 */
 	public function CreateContact (Contact $Contact) {
 
 		$requestUrl = '/contact/';
@@ -211,6 +245,11 @@ class API
 
 	}
 
+	/**
+	 * @param int $contactId
+	 * @param string $comment
+	 * @return bool|string
+	 */
 	public function CreateSalesOrderHeader (int $contactId, string $comment) {
 
 		$requestUrl = '/sales/order';
@@ -222,6 +261,15 @@ class API
 
 	}
 
+	/**
+	 * @param int $salesHeaderId
+	 * @param int $id
+	 * @param int $quantity
+	 * @param int $objectCodeId
+	 * @param string $dateFrom
+	 * @param string $dateTo
+	 * @return bool|string
+	 */
 	public function CreateSalesOrderLine (int $salesHeaderId, int $id, int $quantity, int $objectCodeId, string $dateFrom, string $dateTo) {
 
 		$requestUrl = '/sales/line/';
@@ -238,6 +286,10 @@ class API
 
 	}
 
+	/**
+	 * @param int $salesHeaderId
+	 * @return bool|string
+	 */
 	public function CreateSalesInvoice (int $salesHeaderId) {
 
 		$requestUrl = '/sales/invoice';
@@ -268,6 +320,15 @@ class API
 		return $this->SendGetCurlRequest ($requestUrl);
 	}
 
+	/**
+	 * @param int $salesInvoiceId
+	 * @param string $totalAmountFormatted
+	 * @param int $paymentMethodId
+	 * @param string $token
+	 * @param string $PayerID
+	 * @param string $captureId
+	 * @return bool|string
+	 */
 	public function PostPayment (int $salesInvoiceId, string $totalAmountFormatted, int $paymentMethodId, string $token, string $PayerID, string $captureId) {
 
 		$requestUrl = '/sales/invoice/payment';
@@ -285,6 +346,12 @@ class API
 
 	}
 
+	/**
+	 * @param int $salesHeaderId
+	 * @param int $salesInvoiceId
+	 * @param int $statusId
+	 * @return bool|string
+	 */
 	public function PutUpdateSalesInvoice (int $salesHeaderId, int $salesInvoiceId, int $statusId) {
 
 		$requestUrl = '/sales/invoice/statusupdate';
@@ -298,6 +365,10 @@ class API
 
 	}
 
+	/**
+	 * @param int $salesHeaderId
+	 * @return bool|string
+	 */
 	public function SendInvoice (int $salesHeaderId) {
 
 		$requestUrl = '/sales/invoice/send';

@@ -26,7 +26,9 @@ class Email
 		try {
 
 			//Eimail-Objekt erstellen
-			$mail              = new Mailer();
+			$mail              = new Mailer(true);
+			$mail->Port = 587;
+			//$mail->SMTPDebug = 2;
 			$mail->isAdminMail = true;
 
 			//Header

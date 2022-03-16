@@ -9,6 +9,7 @@ jQuery(document).ready(function ($) {
     //Variables
     let error = false;
     let btnSave = $('#btnSave');
+    let btnTestEmail = $('#btnTestEmail');
     let btnLoadAGBS = $('#btnLoadAGBS');
     let btnLoadDSGVO = $('#btnLoadDSGVO');
     let responseNode = $('#response');
@@ -16,6 +17,7 @@ jQuery(document).ready(function ($) {
 
     //Events
     btnSave.click(SaveSettings);
+    btnTestEmail.click(SendTestEmail);
     btnLoadAGBS.click(LoadAGBS);
     btnLoadDSGVO.click(LoadDSGVO);
 
@@ -43,6 +45,7 @@ jQuery(document).ready(function ($) {
         let smtpServer = $('#smtpServer').val();
         let smtpUser = $('#smtpUser').val();
         let smtpPass = $('#smtpPass').val();
+        let debug = $('#debug').prop('checked');
 
         console.log({payPal});
         console.log({payPalSandbox});
@@ -89,6 +92,7 @@ jQuery(document).ready(function ($) {
                     smtpServer: smtpServer,
                     smtpUser: smtpUser,
                     smtpPass: smtpPass,
+                    debug: debug,
 
                 },
 
@@ -334,6 +338,76 @@ jQuery(document).ready(function ($) {
         }
 
         $('#backendErrorMessage').show();
+
+    }
+
+    function HideErrorMessage() {
+
+        $('#backendErrorMessage').hide();
+
+    }
+
+    function SendTestEmail () {
+
+        HideErrorMessage();
+
+        let smtpServer = $('#smtpServer').val();
+        let smtpUser = $('#smtpUser').val();
+        let smtpPass = $('#smtpPass').val();
+        let error = false;
+
+        if(smtpServer != "" && smtpUser != "" && smtpPass != ""){
+
+            try {
+
+                $.ajax({
+
+                    url: directory + "/ajax.php",
+
+                    type: "POST",
+
+                    data: {
+                        method: 'SendTestEmail',
+                        smtpServer: smtpServer,
+                        smtpUser: smtpUser,
+                        smtpPass: smtpPass,
+
+                    },
+
+                    dataType: "json",
+
+                    async: true,
+
+                    success: function (response) {
+
+                        let error = response.error;
+
+                        if (error === "") {
+
+                            ShowErrorMessage("Erfolg", 'Das hat geklappt. Die Email wurde versendet');
+
+                        } else {
+                            ShowErrorMessage("Fehler", error);
+                        }
+
+                    },
+                    error: function (error) {
+                        ShowErrorMessage("Fehler", error);
+                    }
+
+                });
+
+            } catch (e) {
+
+                ShowErrorMessage("Fehler", e.message);
+
+            }
+
+            loading.hide();
+
+        }else{
+            ShowErrorMessage("Fehler", "Du musst alle Felder in der Email Debug Sektion ausfüllen!");
+        }
 
     }
 

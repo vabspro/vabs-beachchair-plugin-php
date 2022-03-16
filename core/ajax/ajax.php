@@ -51,7 +51,7 @@ try {
 
 	if ($method == 'SaveSettings') {
 
-		$Config                   = new Settings();
+		$Config                     = new Settings();
 		$Config->agbLink            = $_POST['agbLink'] ? : '';
 		$Config->dsgvoLink          = $_POST['dsgvoLink'] ? : '';
 		$Config->apiURL             = $_POST['apiURL'] ? : '';
@@ -64,19 +64,20 @@ try {
 		$Config->payPalClientId     = $_POST['payPalClientId'] ? : '';
 		$Config->payPalClientSecret = $_POST['payPalClientSecret'] ? : '';
 		$Config->textBeforeBooking  = $_POST['textBeforeBooking'] ? : '';
-		$Config->zoom  = $_POST['zoom'] ? : 15;
-		$Config->latCenter  = $_POST['latCenter'] ? : '';
-		$Config->lonCenter  = $_POST['lonCenter'] ? : '';
-		$Config->smtpServer  = $_POST['smtpServer'] ? : '';
-		$Config->smtpUser  = $_POST['smtpUser'] ? : '';
-		$Config->smtpPass  = $_POST['smtpPass'] ? : '';
+		$Config->zoom               = $_POST['zoom'] ? : 15;
+		$Config->latCenter          = $_POST['latCenter'] ? : '';
+		$Config->lonCenter          = $_POST['lonCenter'] ? : '';
+		$Config->smtpServer         = $_POST['smtpServer'] ? : '';
+		$Config->smtpUser           = $_POST['smtpUser'] ? : '';
+		$Config->smtpPass           = $_POST['smtpPass'] ? : '';
+		$Config->debug              = $_POST['debug'] == "true" ? 1 : 0;
 		if (!$Config->Save ()) {
 			throw new Exception("Data could not be saved");
 		}
 
 	}
 
-	if($method == "GetReferrer"){
+	if ($method == "GetReferrer") {
 
 		$settingsReferrerId = $_POST['settingsReferrerId'] ?? '';
 
@@ -84,6 +85,7 @@ try {
 		$response = $API->GetReferrer ();
 		$array = json_decode ($response,true );
 		ob_start ();
+		print_r($array);
 		foreach($array as $element){
 
 			?>
@@ -99,7 +101,7 @@ try {
 
 	}
 
-	if($method == "GetDSGVO"){
+	if ($method == "GetDSGVO") {
 
 		$API = new API();
 		$response = $API->GetDSGVO ();
@@ -642,6 +644,7 @@ try {
 					$responseArray['error'] = "3::StatusCode: ".$e->statusCode." Error: ".$e->getMessage ();
 				} else {
 					$responseArray['error'] = '3::PayPal steht momentan nicht zur Verfügung. Bitte wählen Sie eine andere Zahlungsmethode. Fehler beim Ausführen des Requests.';
+					Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: 3::StatusCode: ".$e->statusCode." Error: ".$e->getMessage (), Mailer::EMAIL_SUBJECT_EXCEPTION);
 				}
 
 			} catch (IOException $e) {
@@ -663,8 +666,6 @@ try {
 
 	}
 
-	//SHORTCODE
-
 	if ($method == "GenerateShortCode") {
 
 		$formType = $_POST['formType'] ?? '';
@@ -683,7 +684,7 @@ try {
 
 	}
 
-	if($method == 'LoadMapSettings'){
+	if ($method == 'LoadMapSettings') {
 
 		$Settings = new Settings();
 		$array = $settings = $Settings->Load ();
@@ -692,6 +693,31 @@ try {
 		$responseArray['data']['latCenter']  = $array['latCenter'];
 		$responseArray['data']['lonCenter']  = $array['lonCenter'];
 		$responseArray['error'] = $array['error'] ?? '';
+
+	}
+
+	if ($method == 'SendTestEmail') {
+
+		$responseArray['error'] = "";
+
+		try {
+
+			$smtpServer = $_POST['smtpServer'] ?? '';
+			$smtpUser   = $_POST['smtpUser'] ?? '';
+			$smtpPass   = $_POST['smtpPass'] ?? '';
+			$to         = $_POST['to'] ?? EMAIL_DEVELOPER;
+
+			define ("SMTP_USER", $smtpUser);
+			define ("SMTP_PASS", $smtpPass);
+			define ("SMTP_SERVER", $smtpServer);
+
+			Email::SendAdminMail ("Das ist eine Testmail. Diese wurde von ".$_SERVER['HTTP_HOST']." gesendet");
+
+		} catch(Exception $e) {
+
+			$responseArray['error'] = "Fehler beim Emailversand: " . $e->getMessage ();
+
+		}
 
 	}
 

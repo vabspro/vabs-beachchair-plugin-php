@@ -10,7 +10,6 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
 use PayPalHttp\HttpException;
-use PayPalHttp\IOException;
 
 class Plugin
 {
@@ -207,9 +206,11 @@ class Plugin
 
 		?>
 		<h1>Settings</h1>
-		<h5>Version <span class="badge-primary" style="color: red">1.3</span></h5>
+		<h5>Version <span class="badge-primary" style="color: red">1.4</span></h5>
 		<form action="" class="form-inline" method="POST">
+
 			<div class="form">
+
 				<h3>API</h3>
 				<div class="form-group row">
 					<label for="api_url" class="col-sm-2 col-form-label">API-URL:</label>
@@ -227,7 +228,7 @@ class Plugin
 						<input type="text" class="border bg-light form-control" id="apiClientId" value="<?php echo $settings['apiClientId'] ?? ''; ?>">
 					</div>
 				</div>
-				<h3>PayPal</h3>
+				<h3>PayPal (<?php echo $settings['payPalSandbox'] == 1 ? "TEST" : "PROD"; ?>)</h3>
 				<div class="form-group row">
 					<label for="payPal" class="col-sm-2 col-form-label">Einschalten</label>
 					<div class="col-sm-4">
@@ -246,6 +247,7 @@ class Plugin
 						<input type="password" class="border bg-light form-control" id="payPalClientSecret" value="<?php echo $settings['payPalClientSecret'] ?? ''; ?>">
 					</div>
 				</div>
+
 				<h3>Karte</h3>
 				<div class="alert alert-info">
 					Koordinaten kannst Du <a href="https://www.latlong.net/" target="_blank">hier</a> abrufen und dann unten im Formular eingeben
@@ -296,6 +298,10 @@ class Plugin
 
 				<h3>Email Debug</h3>
 				<div class="form-group row">
+					<label for="debug" class="col-sm-2 col-form-label">Einschalten</label>
+					<div class="col-sm-10">
+						<input type="checkbox" class="border bg-light form-control" id="debug" value="1" <?php echo $settings['debug'] == 1 ? "checked" : ""; ?>>
+					</div>
 					<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
 					<div class="col-sm-10">
 						<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $settings['smtpServer'] ?? ''; ?>">
@@ -309,6 +315,11 @@ class Plugin
 					<label for="smtpPass" class="col-sm-2 col-form-label">Pass:</label>
 					<div class="col-sm-10">
 						<input type="password" class="border bg-light form-control" id="smtpPass" value="<?php echo $settings['smtpPass'] ?? ''; ?>">
+					</div>
+
+					<label for="btnTestEmail" class="col-sm-2 col-form-label">Test Email:</label>
+					<div class="col-sm-10">
+						<button type="button" class="button button-danger" id="btnTestEmail">TEST</button>
 					</div>
 				</div>
 
@@ -329,11 +340,15 @@ class Plugin
 					</div>
 					<span class="loading"></span>
 				</div>
+
 				<div class="form-group row">
 					<p id="response"></p>
 				</div>
+
 				<div class="alert" id="backendErrorMessage" style="display: none;"></div>
+
 			</div>
+
 		</form>
 		<?php
 		$this->HTMLFooter ();
@@ -374,185 +389,188 @@ class Plugin
 
 		$content = '';
 
-		//$settings = $this->Settings->Load ();
-
-		if ($attributes['type'] == 'beachchair_booking') {
-
-			$token = $_GET['token'] ?: '';
-			$PayerID = $_GET['PayerID'] ?: '';
-			$salesHeaderId = $_SESSION['salesHeaderId'] ?: 0;
-			$salesInvoiceId = $_SESSION['salesInvoiceId'] ?: 0;
-
-			$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+		try {
 
 			$Settings = new Settings();
 			$settings = $Settings->Load ();
-			$isSandBox = (int)$settings['payPalSandbox'] === 1;
+			$debug = $settings['debug'] == 1;
 
-			define("SMTP_USER",$settings['smtpUser']);
-			define("SMTP_PASS",$settings['smtpPass']);
-			define("SMTP_SERVER",$settings['smtpServer']);
+			if ($attributes['type'] == 'beachchair_booking') {
 
-			if(!empty($token) && !empty($PayerID)){
+				$token          = $_GET['token'] ? : '';
+				$PayerID        = $_GET['PayerID'] ? : '';
+				$salesHeaderId  = $_SESSION['salesHeaderId'] ? : 0;
+				$salesInvoiceId = $_SESSION['salesInvoiceId'] ? : 0;
 
-				if ($isSandBox) {
-					$environment = new SandboxEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
-				} else {
-					$environment = new ProductionEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
-				}
+				$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-				try {
+				$isSandBox = (int)$settings['payPalSandbox'] === 1;
 
-					$client = new PayPalHttpClient($environment);
-					$request = new OrdersCaptureRequest($token);
-					$request->prefer ('return=representation');
+				define ("SMTP_USER", $settings['smtpUser']);
+				define ("SMTP_PASS", $settings['smtpPass']);
+				define ("SMTP_SERVER", $settings['smtpServer']);
 
-					// Call API with your client and get a response for your call
-					$response = $client->execute ($request);
+				if (!empty($token) && !empty($PayerID)) {
 
-					$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
+					if ($isSandBox) {
+						$environment = new SandboxEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+					} else {
+						$environment = new ProductionEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+					}
 
-					$request  = new OrdersGetRequest($token);
-					$response = $client->execute ($request);
+					try {
 
-					$var = print_r ($response, true);
-					Mailer::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+						$client  = new PayPalHttpClient($environment);
+						$request = new OrdersCaptureRequest($token);
+						$request->prefer ('return=representation');
 
+						// Call API with your client and get a response for your call
+						$response = $client->execute ($request);
 
-				} catch (HttpException $e) {
+						$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
 
-					$statusCode = $e->statusCode;
-					if ($statusCode == 422) {
+						$request  = new OrdersGetRequest($token);
+						$response = $client->execute ($request);
 
-						try {
+						if($debug) {
+							$var = print_r ($response, true);
+							Email::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+						}
 
-							if (empty($client)) {
-								$client = new PayPalHttpClient($environment);
-							}
-							$request  = new OrdersGetRequest($token);
-							$response = $client->execute ($request);
+					} catch (HttpException $e) {
+
+						$statusCode = $e->statusCode;
+						if ($statusCode == 422) {
 
 							try {
-								$var = print_r ($response, true);
-								Mailer::SendAdminMail ("File: ".__FILE__."<br>Place: Already Captured<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+
+								if (empty($client)) {
+									$client = new PayPalHttpClient($environment);
+								}
+								$request  = new OrdersGetRequest($token);
+								$response = $client->execute ($request);
+
+								if ($debug) {
+									$var = print_r ($response, true);
+									Email::SendAdminMail ("File: ".__FILE__."<br>Place: Already Captured<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+								}
+
+								$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
+
 							} catch (Exception $e) {
-								Log::Log ($e->getMessage ());
+
+								echo $e->getMessage ();
+
 							}
-
-							$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
-
-						} catch (Exception $e) {
-
-							echo $e->getMessage ();
 
 						}
 
 					}
 
-					//$captured = true;
+					if (!empty($captureId)) {
+						$API = new API();
+						$API->PostPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+						$API->PutUpdateSalesInvoice ($salesHeaderId, $salesInvoiceId, 5);
+						$API = new API();
+						$API->SendInvoice ($salesHeaderId);
+
+						if ($debug) {
+							Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
+						}
+
+						echo "<script type=\"text/javascript\">window.location = '".$settings['redirectLink']."';</script>";
+					} else {
+						$errorMessage = "Capture ID was empty or couldn't get";
+						Log::Log ($errorMessage);
+						Email::SendAdminMail ("File: ".__FILE__."<br>ErrorMessage: ".$errorMessage, Mailer::EMAIL_SUBJECT_DEBUG);
+					}
 
 				}
 
-				if(!empty($captureId)){
-					$API = new API();
-					$API->PostPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
-					$API->PutUpdateSalesInvoice ($salesHeaderId, $salesInvoiceId, 5);
-					$API = new API();
-					$API->SendInvoice ($salesHeaderId);
+				ob_start ();
+				?>
+				<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
+					This is a success alert—check it out!
+				</div>
+				<div id="bookingContainer">
 
-					echo "<script type=\"text/javascript\">window.location = '".$settings['redirectLink']."';</script>";
-				}else{
-					Log::Log ("Capture ID was empty or couldn't get");
-				}
+					<form id="form" class="row gx-3 gy-2 align-items-center">
 
-
-			}
-
-
-			ob_start ();
-			?>
-			<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
-				This is a success alert—check it out!
-			</div>
-			<div id="bookingContainer">
-
-				<form id="form" class="row gx-3 gy-2 align-items-center">
-
-					<div class="container" id="dateSelectContainer">
-						<h5>Wähle einen oder mehrere Tag(e)</h5>
-						<h3>Anreisetag anklicken und Abreisetag anklicken</h3>
-						<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
-						<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
-						<div id="errorMessage">
-							<!-- via booking Script -->
-						</div>
-					</div>
-
-					<div class="container normal" id="locationSelectContainerNormal" style="display: none">
-						<h5>Strandabschnitt wählen</h5>
-						<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
-						<div class="locationSelect"><!-- via AJAX --></div>
-					</div>
-
-					<div class="container hopping" id="locationSelectContainerHopping" style="display: none">
-						<h5>Strandabschnitt wählen</h5>
-						<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
-						<div class="row g-3">
-							<div class="col-sm-6">
-								<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
-							</div>
-							<div class="col-sm-6">
-								<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
+						<div class="container" id="dateSelectContainer">
+							<h5>Wähle einen oder mehrere Tag(e)</h5>
+							<h3>An- und Abreisetag anklicken!</h3>
+							<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
+							<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
+							<div id="errorMessage">
+								<!-- via booking Script -->
 							</div>
 						</div>
-					</div>
 
+						<div class="container normal" id="locationSelectContainerNormal" style="display: none">
+							<h5>Strandabschnitt wählen</h5>
+							<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
+							<div class="locationSelect"><!-- via AJAX --></div>
+						</div>
 
-					<div class="container normal" id="mapsContainer">
-						<div id="leafLetMap"></div>
-						<div id="flexMap">
-
-							<div class="flexContainer">
-
-								<div class="flexTopContainer">
-
-									<h2 class="flexHeadline"><!-- via Ajax --></h2>
-									<button class="flexBtnBack">X</button>
-
+						<div class="container hopping" id="locationSelectContainerHopping" style="display: none">
+							<h5>Strandabschnitt wählen</h5>
+							<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
+							<div class="row g-3">
+								<div class="col-sm-6">
+									<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
 								</div>
-
-								<div class="flexRowContainer">
-
-									<div class="flexRows"><!-- via AJAX --></div>
-
+								<div class="col-sm-6">
+									<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
 								</div>
+							</div>
+						</div>
 
-								<div id="chair-card" style="display:none;">
-									<div class="chair-container">
-										<button type="button" class="btn btn-secondary btnChairClose">X</button>
-										<div class="chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-										<div class="chair-body">
-											<div>
-												<strong style="display: block;">Strandkorb Nummer: <span id="chairCardName"></span></strong> <span style="display: block;">Modell: <span id="chairCardType"></span></span>
+						<div class="container normal" id="mapsContainer">
+
+							<div id="leafLetMap"></div>
+							<div id="flexMap">
+
+								<div class="flexContainer">
+
+									<div class="flexTopContainer">
+
+										<h2 class="flexHeadline"><!-- via Ajax --></h2>
+										<button class="flexBtnBack">X</button>
+
+									</div>
+
+									<div class="flexRowContainer">
+
+										<div class="flexRows"><!-- via AJAX --></div>
+
+									</div>
+
+									<div id="chair-card" style="display:none;">
+										<div class="chair-container">
+											<button type="button" class="btn btn-secondary btnChairClose">X</button>
+											<div class="chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
+											<div class="chair-body">
+												<div>
+													<strong style="display: block;">Strandkorb Nummer: <span id="chairCardName"></span></strong> <span style="display: block;">Modell: <span id="chairCardType"></span></span>
+												</div>
+												<button type="button" id="chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
+												<button type="button" id="chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
 											</div>
-											<button type="button" id="chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
-											<button type="button" id="chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
 										</div>
 									</div>
+
 								</div>
 
 							</div>
-
 						</div>
-					</div>
 
-					<div class="container" id="personalDataContainer" style="display: none">
+						<div class="container" id="personalDataContainer" style="display: none">
 
-						<h5>Vervollständige die persönlichen Daten</h5>
+							<h5>Vervollständige die persönlichen Daten</h5>
 
 							<div class="row g-3">
 								<div class="col-sm-3">
-									<input name="firstName" class="border bg-light" type="text"placeholder="Vorname" required>
+									<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
 								</div>
 								<div class="col-sm-3">
 									<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
@@ -583,69 +601,89 @@ class Plugin
 									<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
 								</div>
 							</div>
-					</div>
 
-					<div class="container" id="shoppingCartContainerWrapper" style="display: none">
-						<h5>Zusammenfassung &amp; Buchung</h5>
-						<div id="shoppingCartContainer">
-							<div id="shoppingCartHeader">
-								<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
-
-							</div>
-							<div id="shoppingCartList">
-								<!-- via AJAX -->
-							</div>
-							<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="https://vabs-demo-beach.drechsler-development.de/" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="https://vabs-demo-beach.drechsler-development.de/" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a>gelesen und verstanden zu haben und stimme diesen zu.<br>
-
-							<div id="paymentSection">
-								<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
-								<?php
-								$Settings = new Settings();
-								$settings = $Settings->Load ();
-								if($settings['payPal'] == 1){
-								?>
-
-									<div class="form-check form-check-inline">
-										<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-									</div>
-									<div class="form-check form-check-inline">
-										<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
-									</div>
-
-								<?php
-								}else{
-								?>
-									Ich bezahle via:
-									<div class="form-check form-check-inline">
-										<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-									</div>
-
-								<?php
-								}
-								?>
-							</div>
-							<?php
-							if (!empty($settings['textBeforeBooking'])) {
-								?>
-								<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($settings['textBeforeBooking']); ?></div>
-								<?php
-							}
-							?>
-							<button type="button" id="btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
-							<div class="alert" id="backendErrorMessage" style="display: none; margin-top: 15px"></div>
 						</div>
 
-					</div>
+						<div class="container" id="shoppingCartContainerWrapper" style="display: none">
 
-				</form>
+							<h5>Zusammenfassung &amp; Buchung</h5>
 
+							<div id="shoppingCartContainer">
+								<div id="shoppingCartHeader">
+									<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
+
+								</div>
+								<div id="shoppingCartList">
+									<!-- via AJAX -->
+								</div>
+								<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $settings['agbLink']; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $settings['dsgvoLink']; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+
+								<div id="paymentSection">
+									<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
+									<?php
+
+									if ($settings['payPal'] == 1) {
+										?>
+
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+										</div>
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
+										</div>
+
+										<?php
+									} else {
+										?>
+										Ich bezahle via:
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+										</div>
+
+										<?php
+									}
+									?>
+								</div>
+								<?php
+								if (!empty($settings['textBeforeBooking'])) {
+									?>
+									<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($settings['textBeforeBooking']); ?></div>
+									<?php
+								}
+								?>
+								<button type="button" id="btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
+								<div class="alert" id="backendErrorMessage" style="display: none; margin-top: 15px"></div>
+							</div>
+
+						</div>
+
+					</form>
+
+				</div>
+
+				<?php
+				$content = ob_get_contents ();
+				ob_end_clean ();
+
+			}
+
+		} catch (Exception $e) {
+
+			$message = $e->getMessage ();
+			Email::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: ".$message, Mailer::EMAIL_SUBJECT_EXCEPTION);
+			$message = SYSTEMTYPE != PROD ? $message : "(Noch) Unbekannter Fehler. Der Programmierer wurde informiert";
+			ob_start ();
+			?>
+			<div class="alert alert-error" role="alert">
+				<?php echo $message; ?>
 			</div>
-
 			<?php
 			$content = ob_get_contents ();
 			ob_end_clean ();
 
-		}
+		} // ENDE try {
+
+
 
 		return $content;
 

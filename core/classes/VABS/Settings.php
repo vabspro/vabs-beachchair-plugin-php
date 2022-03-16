@@ -32,6 +32,8 @@ class Settings
 	public string $smtpUser  = '';
 	public string $smtpPass  = '';
 
+	public int $debug  = 0;
+
 	//Loads the settings from a settings file
 
 	/**
@@ -54,13 +56,14 @@ class Settings
 				'payPalSandbox'      => 0,
 				'payPalClientId'     => '',
 				'payPalClientSecret' => '',
-				'textBeforeBooking' => '',
-				'zoom' => 15,
-				'latCenter' => '',
-				'lonCenter' => '',
-				'smtpServer' => '',
-				'smtpUser' => '',
-				'smtpPass' => '',
+				'textBeforeBooking'  => '',
+				'zoom'               => 15,
+				'latCenter'          => '',
+				'lonCenter'          => '',
+				'smtpServer'         => '',
+				'smtpUser'           => '',
+				'smtpPass'           => '',
+				'debug'              => 0,
 			];
 			$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');
 			if($write === false){
@@ -109,12 +112,13 @@ class Settings
 			'payPalClientId'     => $this->payPalClientId ? : '',
 			'payPalClientSecret' => $this->payPalClientSecret ? : '',
 			'textBeforeBooking'  => $this->textBeforeBooking ? strip_tags ($this->textBeforeBooking) : '',
-			'zoom' => $this->zoom ?? 1,
-			'latCenter' => $this->latCenter ?? '',
-			'lonCenter' => $this->lonCenter ?? '',
-			'smtpServer' => $this->smtpServer ?? '',
-			'smtpUser' => $this->smtpUser ?? '',
-			'smtpPass' => $this->smtpPass ?? '',
+			'zoom'               => $this->zoom ?? 1,
+			'latCenter'          => $this->latCenter ?? '',
+			'lonCenter'          => $this->lonCenter ?? '',
+			'smtpServer'         => $this->smtpServer ?? '',
+			'smtpUser'           => $this->smtpUser ?? '',
+			'smtpPass'           => $this->smtpPass ?? '',
+			'debug'           	 => $this->debug ?? 0,
 		];
 
 		$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');
