@@ -29,24 +29,24 @@ jQuery(document).ready(function ($) {
     //declare nodes
 
     let dateFrom = $(".dateFrom");
-    let flexHeadline = $('.flexHeadline');
-    let flexRows = $('.flexRows');
+    let vabs__flexHeadline = $('.vabs__flexHeadline');
+    let vabs__flexRows = $('.vabs__flexRows');
     let flexRow = $('.flexRow');
     let locationId = $('.locationId');
-    let chairCard = $('#chair-card');
+    let chairCard = $('#vabs__chair-card');
 
     let successMessage = $('#successMessage');
-    let bookingContainer = $('#bookingContainer');
-    let chairCardBtnAddToShoppingCart = $('#chairCardBtnAddToShoppingCart');
-    let chairCardBtnRemoveFromShoppingCart = $('#chairCardBtnRemoveFromShoppingCart');
-    let chairCardHeader = $('.chair-header');
-    let chairCardType = $('#chairCardType');
-    let chairCardName = $('#chairCardName');
+    let vabs__bookingContainer = $('#vabs__bookingContainer');
+    let vabs__chairCardBtnAddToShoppingCart = $('#vabs__chairCardBtnAddToShoppingCart');
+    let vabs__chairCardBtnRemoveFromShoppingCart = $('#vabs__chairCardBtnRemoveFromShoppingCart');
+    let chairCardHeader = $('.vabs__chair-header');
+    let vabs__chairCardType = $('#vabs__chairCardType');
+    let vabs__chairCardName = $('#vabs__chairCardName');
 
-    let shoppingCartList = $('#shoppingCartList');
+    let vabs__shoppingCartList = $('#vabs__shoppingCartList');
     let shoppingCartDateTimeRange = $('#shoppingCartDateTimeRange');
 
-    let node = $('#bookingContainer');
+    let node = $('#vabs__bookingContainer');
     let btnRefresh = $('#btnRefresh');
 
     //Object-Templates
@@ -122,12 +122,12 @@ jQuery(document).ready(function ($) {
         });
 
         node.on('change', '.locationId', HandleLocationChange);
-        node.on('click', '.flexBtnBack', ShowLocationtMap);
+        node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
         node.on('click', '.flexChair', HandleMapChairClick);
-        node.on('click', '.btnChairClose', CloseBeachChairPopupCard);
-        node.on('click', '#chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-        node.on('click', '#chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-        node.on('click', '#btnOrderNow', ValidateAndSendOrder);
+        node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
+        node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+        node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+        node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
         node.on('click', '#btnLogShoppingCart', LogShoppingCart);
 
         btnRefresh.click(function () {
@@ -137,7 +137,7 @@ jQuery(document).ready(function ($) {
         });
 
         LoadBeachChairTypes();
-        LoadMapSettings();
+        //LoadMapSettings();
 
 
     }
@@ -174,6 +174,7 @@ jQuery(document).ready(function ($) {
 
     }
 
+    /*
     let LoadMapSettings = function () {
 
         $.ajax({
@@ -208,6 +209,7 @@ jQuery(document).ready(function ($) {
         });
 
     }
+    */
 
     //Handles
 
@@ -227,8 +229,8 @@ jQuery(document).ready(function ($) {
 
             }
 
-            $('#leafLetMap').hide();
-            $('#flexMap').hide();
+            $('#vabs__leafLetMap').hide();
+            $('#vabs__flexMap').hide();
 
             //dates is a date object
 
@@ -338,7 +340,7 @@ jQuery(document).ready(function ($) {
                             ShowLocationtMap();
 
                             //Draw MAP
-                            DrawLeafLetMap('leafLetMap', data, bookableLocationsArray);
+                            DrawLeafLetMap('vabs__leafLetMap', data, bookableLocationsArray);
                             map.invalidateSize();
 
                             SetModus('normal');
@@ -424,7 +426,7 @@ jQuery(document).ready(function ($) {
 
                                     //As we already choosed a location we can display the name of the location in the leaf let map
 
-                                    flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
+                                    vabs__flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
 
                                     for (let j = 0; j < freeBeachChairs.length; j++) {
 
@@ -558,7 +560,7 @@ jQuery(document).ready(function ($) {
 
                                         }
 
-                                        flexRows.html(mapOutput);
+                                        vabs__flexRows.html(mapOutput);
                                         //Remove empty lines
 
                                         $('.flexRowDrawed').filter(function () {
@@ -628,15 +630,15 @@ jQuery(document).ready(function ($) {
 
 
     let ShowBeachChairMap = function () {
-        $('#flexMap').show();
-        $('#leafLetMap').hide();
+        $('#vabs__flexMap').show();
+        $('#vabs__leafLetMap').hide();
     }
 
     let ShowLocationtMap = function () {
-        flexRows.html('');
-        flexHeadline.html('');
-        $('#leafLetMap').show();
-        $('#flexMap').hide();
+        vabs__flexRows.html('');
+        vabs__flexHeadline.html('');
+        $('#vabs__leafLetMap').show();
+        $('#vabs__flexMap').hide();
     }
 
     let ShowBeachChairPopupCard = function (id, name, beachChairTypeId, beachChairTypeName, locationId, beachChairLocationName, beachRowName, rowDirection, rowDirectionName, dateFrom, dateFromFormatted, dateTo, dateToFormatted, unitPrice) {
@@ -659,8 +661,8 @@ jQuery(document).ready(function ($) {
         currentBeachChair.dateToFormatted = dateToFormatted;
         currentBeachChair.unitPrice = unitPrice;
 
-        chairCardName.text(name);
-        chairCardType.text(beachChairTypeName);
+        vabs__chairCardName.text(name);
+        vabs__chairCardType.text(beachChairTypeName);
         let imageUrl = '';
         if (beachChairTypes.length > 0) {
             console.log('Length > 0');
@@ -683,11 +685,11 @@ jQuery(document).ready(function ($) {
 
         //Is already in Shopping Cart
         if (index !== -1) {
-            chairCardBtnRemoveFromShoppingCart.show();
-            chairCardBtnAddToShoppingCart.hide();
+            vabs__chairCardBtnRemoveFromShoppingCart.show();
+            vabs__chairCardBtnAddToShoppingCart.hide();
         } else {
-            chairCardBtnRemoveFromShoppingCart.hide();
-            chairCardBtnAddToShoppingCart.show();
+            vabs__chairCardBtnRemoveFromShoppingCart.hide();
+            vabs__chairCardBtnAddToShoppingCart.show();
         }
 
         chairCard.show();
@@ -699,8 +701,8 @@ jQuery(document).ready(function ($) {
     let CloseBeachChairPopupCard = function () {
 
         chairCard.hide();
-        chairCardBtnRemoveFromShoppingCart.hide();
-        chairCardBtnAddToShoppingCart.hide();
+        vabs__chairCardBtnRemoveFromShoppingCart.hide();
+        vabs__chairCardBtnAddToShoppingCart.hide();
 
     }
 
@@ -1009,14 +1011,14 @@ jQuery(document).ready(function ($) {
 
         let shoppingCartLength = shoppingCart.length;
 
-        shoppingCartList.html(output);
+        vabs__shoppingCartList.html(output);
 
         if (shoppingCartLength > 0) {
-            $('#personalDataContainer').show();
-            $('#shoppingCartContainerWrapper').show();
+            $('#vabs__personalDataContainer').show();
+            $('#vabs__shoppingCartContainerWrapper').show();
         } else {
-            $('#personalDataContainer').hide();
-            $('#shoppingCartContainerWrapper').hide();
+            $('#vabs__personalDataContainer').hide();
+            $('#vabs__shoppingCartContainerWrapper').hide();
 
         }
 
@@ -1073,7 +1075,7 @@ jQuery(document).ready(function ($) {
                         window.open(redirectLink, '_self');
                     } else {
                         //Hide Form
-                        bookingContainer.remove();
+                        vabs__bookingContainer.remove();
                         //Show Success Message
                         successMessage.show();
                     }
@@ -1214,7 +1216,7 @@ jQuery(document).ready(function ($) {
     let EmptyShoppingCart = function () {
         shoppingCart = [];
         console.log('Clear Shopping Cart');
-        shoppingCartList.html('');
+        vabs__shoppingCartList.html('');
     }
 
     let SetModus = function (mode) {
@@ -1298,19 +1300,19 @@ jQuery(document).ready(function ($) {
 
     function ShowErrorMessage(title, message, delay = 5) {
 
-        $('#backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
+        $('#vabs__backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
 
         if (title == "Fehler") {
-            $('#backendErrorMessage').addClass('alert-danger');
+            $('#vabs__backendErrorMessage').addClass('alert-danger');
         } else if (title == "Warnung") {
-            $('#backendErrorMessage').addClass('alert-warning');
+            $('#vabs__backendErrorMessage').addClass('alert-warning');
         } else if (title == "Hinweis") {
-            $('#backendErrorMessage').addClass('alert-info');
+            $('#vabs__backendErrorMessage').addClass('alert-info');
         } else if (title == "Erfolg") {
-            $('#backendErrorMessage').addClass('alert-success');
+            $('#vabs__backendErrorMessage').addClass('alert-success');
         }
 
-        $('#backendErrorMessage').show();
+        $('#vabs__backendErrorMessage').show();
 
     }
 

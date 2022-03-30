@@ -325,25 +325,25 @@ jQuery(document).ready(function ($) {
 
     function ShowErrorMessage(title, message, delay = 5) {
 
-        $('#backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
+        $('#vabs__backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
 
         if (title == "Fehler") {
-            $('#backendErrorMessage').addClass('alert-danger');
+            $('#vabs__backendErrorMessage').addClass('alert-danger');
         } else if (title == "Warnung") {
-            $('#backendErrorMessage').addClass('alert-warning');
+            $('#vabs__backendErrorMessage').addClass('alert-warning');
         } else if (title == "Hinweis") {
-            $('#backendErrorMessage').addClass('alert-info');
+            $('#vabs__backendErrorMessage').addClass('alert-info');
         }else if (title == "Erfolg") {
-            $('#backendErrorMessage').addClass('alert-success');
+            $('#vabs__backendErrorMessage').addClass('alert-success');
         }
 
-        $('#backendErrorMessage').show();
+        $('#vabs__backendErrorMessage').show();
 
     }
 
     function HideErrorMessage() {
 
-        $('#backendErrorMessage').hide();
+        $('#vabs__backendErrorMessage').hide();
 
     }
 

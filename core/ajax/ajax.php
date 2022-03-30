@@ -26,6 +26,7 @@ use VABS\Email;
 
 require_once '../../vendor/autoload.php';
 require_once '../../config.php';
+require_once $_SERVER['DOCUMENT_ROOT'].'/wp-config.php';
 
 $allowedMethods = [
 		'SaveSettings',
@@ -51,28 +52,25 @@ try {
 
 	if ($method == 'SaveSettings') {
 
-		$Config                     = new Settings();
-		$Config->agbLink            = $_POST['agbLink'] ? : '';
-		$Config->dsgvoLink          = $_POST['dsgvoLink'] ? : '';
-		$Config->apiURL             = $_POST['apiURL'] ? : '';
-		$Config->apiToken           = $_POST['apiToken'] ? : '';
-		$Config->apiClientId        = $_POST['apiClientId'] ? : '';
-		$Config->referrerId         = $_POST['referrerId'] ? (int)$_POST['referrerId'] : 0;
-		$Config->redirectLink       = $_POST['redirectLink'] ? : '';
-		$Config->payPal             = isset($_POST['payPal']) ? (int)$_POST['payPal'] : 0;
-		$Config->payPalSandbox      = isset($_POST['payPalSandbox']) ? (int)$_POST['payPalSandbox'] : 1;
-		$Config->payPalClientId     = $_POST['payPalClientId'] ? : '';
-		$Config->payPalClientSecret = $_POST['payPalClientSecret'] ? : '';
-		$Config->textBeforeBooking  = $_POST['textBeforeBooking'] ? : '';
-		$Config->zoom               = $_POST['zoom'] ? : 15;
-		$Config->latCenter          = $_POST['latCenter'] ? : '';
-		$Config->lonCenter          = $_POST['lonCenter'] ? : '';
-		$Config->smtpServer         = $_POST['smtpServer'] ? : '';
-		$Config->smtpUser           = $_POST['smtpUser'] ? : '';
-		$Config->smtpPass           = $_POST['smtpPass'] ? : '';
-		$Config->debug              = $_POST['debug'] == "true" ? 1 : 0;
-		if (!$Config->Save ()) {
-			throw new Exception("Data could not be saved");
+		$settings                     = new Settings();
+		$settings->apiToken           = $_POST['apiToken'] ? : '';
+		$settings->apiClientId        = $_POST['apiClientId'] ? : '';
+		$settings->apiURL             = $_POST['apiURL'] ? : '';
+		$settings->dsgvoLink          = $_POST['dsgvoLink'] ? : '';
+		$settings->agbLink            = $_POST['agbLink'] ? : '';
+		$settings->redirectLink       = $_POST['redirectLink'] ? : '';
+		$settings->textBeforeBooking  = $_POST['textBeforeBooking'] ? : '';
+		$settings->referrerId         = $_POST['referrerId'] ? (int)$_POST['referrerId'] : 0;
+		$settings->payPal             = isset($_POST['payPal']) ? (int)$_POST['payPal'] : 0;
+		$settings->payPalSandbox      = isset($_POST['payPalSandbox']) ? (int)$_POST['payPalSandbox'] : 1;
+		$settings->payPalClientId     = $_POST['payPalClientId'] ? : '';
+		$settings->payPalClientSecret = $_POST['payPalClientSecret'] ? : '';
+		$settings->debug              = $_POST['debug'] == "true" ? 1 : 0;
+		$settings->smtpServer         = $_POST['smtpServer'] ? : '';
+		$settings->smtpUser           = $_POST['smtpUser'] ? : '';
+		$settings->smtpPass           = $_POST['smtpPass'] ? : '';
+		if (!$settings->Save ()) {
+			throw new Exception("Data could not be saved. Error: ".$settings->errorMessage);
 		}
 
 	}
@@ -85,7 +83,7 @@ try {
 		$response = $API->GetReferrer ();
 		$array = json_decode ($response,true );
 		ob_start ();
-		print_r($array);
+		//print_r($array);
 		foreach($array as $element){
 
 			?>
@@ -248,17 +246,17 @@ try {
 		$totalTaxAmount = 0;
 		$tax = 19;
 
-		$dateFrom = $_POST['dateFrom'] ?? '';
-		$dateTo   = $_POST['dateTo'] ?? '';
+		$dateFrom        = $_POST['dateFrom'] ?? '';
+		$dateTo          = $_POST['dateTo'] ?? '';
 		$formData        = $_POST['formData'] ?? '';
-		$formDataDecoded = json_decode ($formData, true);
+		$shoppingCart    = $_POST['shoppingCart'] ?? '';
 
-		$shoppingCart = $_POST['shoppingCart'] ?? '';
-		$lines        = json_decode ($shoppingCart, true);
+		$formDataDecoded = json_decode (str_replace ("\\","",$formData), true);
+		$lines           = json_decode (str_replace ("\\", "", $shoppingCart), true);
 
 		#region Validation of JSON
 		if ($formDataDecoded === null) {
-			throw new ValidationException('Der Kontakt-String ist kein valides JSON');
+			throw new ValidationException('Das übermittelte Kontaktformular ist kein valides JSON.');
 		}
 
 		if ($lines === null) {
@@ -270,8 +268,8 @@ try {
 
 		//Date
 		$dateFrom = Date::FormatDateToFormat ($dateFrom, Date::DATE_FORMAT_SQL_DATE);
-		$dateTo = Date::FormatDateToFormat ($dateTo, Date::DATE_FORMAT_SQL_DATE);
-		$compare = Date::CompareDates ($dateTo, $dateFrom);
+		$dateTo   = Date::FormatDateToFormat ($dateTo, Date::DATE_FORMAT_SQL_DATE);
+		$compare  = Date::CompareDates ($dateTo, $dateFrom);
 		if($compare == Date::DATE_COMPARE_1_LT_2){
 			throw new ValidationException("Datum von darf nicht größer sein, als Datom bis");
 		}
@@ -473,27 +471,31 @@ try {
 
 		//Redirect?
 		$Settings = new Settings();
-		$array = $Settings->Load ();
-		$responseArray['redirectLink'] = $array['redirectLink'] ?: '';
+		if(!$Settings->Load ()){
+			throw new Exception("Einstellungen konnten nicht geladen werden");
+		}
+		$row = $Settings->row;
+		if(!$row instanceof Settings){
+			throw new Exception("row wasn't instance of Settings");
+		}
+		$responseArray['redirectLink'] = $row->redirectLink ?: '';
 
 		#region PAYPAL
 
 		if ($paymentMethodId == PAYMENT_METHOD_PAYPAL) {
 
-			$Settings = new Settings();
-			$settings = $Settings->Load ();
-			$usePayPal = $settings['payPal'] == 1;
-			$isSandBox = (int)$settings['payPalSandbox'] === 1;
+			$usePayPal = $row->payPal == 1;
+			$isSandBox = (int)$row->payPalSandbox === 1;
 
-			if($settings['payPal'] != 1){
+			if($row->payPal != 1){
 				throw new ValidationException("Sie haben PayPal ausgewählt, aber dies ist eigentlich gar nicht eingeschaltet");
 			}
 
 			//Make PayPal Request
 			if ($isSandBox) {
-				$environment = new SandboxEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+				$environment = new SandboxEnvironment($row->payPalClientId, $row->payPalClientSecret);
 			} else {
-				$environment = new ProductionEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+				$environment = new ProductionEnvironment($row->payPalClientId, $row->payPalClientSecret);
 			}
 
 			$client = new PayPalHttpClient($environment);
@@ -668,26 +670,39 @@ try {
 
 	if ($method == "GenerateShortCode") {
 
-		$formType = $_POST['formType'] ?? '';
-		$redirectLink = $_POST['redirectLink'] ?? '';
+		$formType     = $_POST['formType'] ?? '';
+
 		$Settings = new Settings();
-		$settings = $Settings->Load ();
-		$agbsLink = $settings['agbLink'];
-		$dsgvoLink = $settings['dsgvoLink'];
-		$redirectLink = $settings['redirectLink'];
+		if (!$Settings->Load ()) {
+			throw new Exception("Einstellungen konnten nicht geladen werden");
+		}
+		$row = $Settings->row;
+		if (!$row instanceof Settings) {
+			throw new Exception("row wasn't instance of Settings");
+		}
+		$agbsLink = $row->agbLink;
+		$dsgvoLink = $row->dsgvoLink;
+		$redirectLink = $row->redirectLink;
 
 		if(empty($formType)){
 			throw new Exception("Ein Formular-Art muss schon gewählt werden");
 		}
 
-		$responseArray['data'] = '[generate_vabs_form type="'.$formType.'" agb="'.$agbsLink.'" datenschutz="'.$dsgvoLink.'" redirectLink="'.$redirectLink.'"]';
+		$responseArray['data'] = '[generate_vabs_form type="'.$formType.'" agb="'.$row->agbLink.'" datenschutz="'.$row->dsgvoLink.'" redirectLink="'.$row->redirectLink.'"]';
 
 	}
 
+	/*
 	if ($method == 'LoadMapSettings') {
 
 		$Settings = new Settings();
-		$array = $settings = $Settings->Load ();
+		if (!$Settings->Load ()) {
+			throw new Exception("Einstellungen konnten nicht geladen werden");
+		}
+		$row = $Settings->row;
+		if (!$row instanceof Settings) {
+			throw new Exception("row wasn't instance of Settings");
+		}
 
 		$responseArray['data']['zoom']  = $array['zoom'];
 		$responseArray['data']['latCenter']  = $array['latCenter'];
@@ -695,6 +710,7 @@ try {
 		$responseArray['error'] = $array['error'] ?? '';
 
 	}
+	*/
 
 	if ($method == 'SendTestEmail') {
 

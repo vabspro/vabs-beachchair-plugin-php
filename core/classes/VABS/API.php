@@ -9,10 +9,10 @@ use Exception;
 class API
 {
 
-	private ?string $apiURL;
-	private ?string $apiToken;
-	private ?string $apiClientId;
-	private ?array $header;
+	private string $apiURL = '';
+	private string $apiToken = '';
+	private string $apiClientId = '';
+	private array $header = [];
 
 	/**
 	 * @throws Exception
@@ -20,10 +20,16 @@ class API
 	public function __construct () {
 
 		$Settings          = new Settings();
-		$settings          = $Settings->Load ();
-		$this->apiToken    = $settings['apiToken'] ?? '';
-		$this->apiClientId = $settings['apiClientId'] ?? '';
-		$this->apiURL      = $settings['apiURL'] ?? '';
+		if(!$Settings->Load ()){
+			throw new Exception("Settings could not be loaded. Error: ".$Settings->errorMessage);
+		}
+		$row = $Settings->row;
+		if(!$row instanceof Settings){
+			throw new Exception("row wasn't instance of Settings1");
+		}
+		$this->apiToken    = $row->apiToken ?? '';
+		$this->apiClientId = $row->apiClientId ?? '';
+		$this->apiURL      = $row->apiURL ?? '';
 
 		$this->header = ['Token: '.$this->apiToken];
 
@@ -105,7 +111,7 @@ class API
 		if ($err) {
 			return json_encode (["error" => "cURL Error #:".$err]);
 		} else {
-			return self::IsJson ($response) ? $response : json_encode (["error" => "Response wasn't a json valide string. Response: ".$response]);
+			return self::IsJson ($response) ? $response : json_encode (["error" => "Response for Request with URL: ".$this->apiURL.$requestUrl."  wasn't a json valide string. Response: ".$response]);
 		}
 
 	}

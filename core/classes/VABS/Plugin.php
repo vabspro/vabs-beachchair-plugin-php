@@ -201,156 +201,147 @@ class Plugin
 
 	public function ShowSettingsForm () {
 
-		$settings = $this->Settings->Load ();
-		$this->HTMLHeader ();
+		try {
 
-		?>
-		<h1>Settings</h1>
-		<h5>Version <span class="badge-primary" style="color: red">1.4</span></h5>
-		<form action="" class="form-inline" method="POST">
+			$Settings = new Settings();
+			if(!$Settings->Load ()){
+				throw new Exception("Settings could not be loaded");
+			}
+			$row = $Settings->row;
+			if(!$row instanceof Settings){
+				throw new Exception("row wasn't instance of Settings2");
+			}
+			$this->HTMLHeader ();
 
-			<div class="form">
+			?>
+			<h1>Settings</h1>
+			<h5>Version <span class="badge-primary" style="color: red"><?php echo $row->versionNumber; ?></span></h5>
+			<form action="" class="form-inline" method="POST">
 
-				<h3>API</h3>
-				<div class="form-group row">
-					<label for="api_url" class="col-sm-2 col-form-label">API-URL:</label>
-					<div class="col-sm-10">
-						<input type="text" class="border bg-light col-6 form-control" id="apiURL" value="<?php echo $settings['apiURL'] ?? ''; ?>">
-					</div>
-				</div>
-				<div class="form-group row">
-					<label for="api_token" class="col-sm-2 col-form-label">API TOKEN:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="apiToken" value="<?php echo $settings['apiToken'] ?? ''; ?>">
-					</div>
-					<label for="client_id" class="col-sm-2 col-form-label">API CLIENT ID:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="apiClientId" value="<?php echo $settings['apiClientId'] ?? ''; ?>">
-					</div>
-				</div>
-				<h3>PayPal (<?php echo $settings['payPalSandbox'] == 1 ? "TEST" : "PROD"; ?>)</h3>
-				<div class="form-group row">
-					<label for="payPal" class="col-sm-2 col-form-label">Einschalten</label>
-					<div class="col-sm-4">
-						<input type="checkbox" class="border bg-light form-control" id="payPal" value="1" <?php echo $settings['payPal'] == 1 ? "checked" : ""; ?>>
-					</div>
-					<label for="payPal" class="col-sm-2 col-form-label">Benutze PayPal SANDBOX</label>
-					<div class="col-sm-4">
-						<input type="checkbox" class="border bg-light form-control" id="payPalSandbox" value="1" <?php echo $settings['payPalSandbox'] == 1 ? "checked" : ""; ?>>
-					</div>
-					<label for="payPalClientId" class="col-sm-2 col-form-label">PayPal CLIENT ID:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="payPalClientId" value="<?php echo $settings['payPalClientId'] ?? ''; ?>">
-					</div>
-					<label for="payPalClientSecret" class="col-sm-2 col-form-label">PayPal CLIENT SECRET:</label>
-					<div class="col-sm-4">
-						<input type="password" class="border bg-light form-control" id="payPalClientSecret" value="<?php echo $settings['payPalClientSecret'] ?? ''; ?>">
-					</div>
-				</div>
+				<div class="form">
 
-				<h3>Karte</h3>
-				<div class="alert alert-info">
-					Koordinaten kannst Du <a href="https://www.latlong.net/" target="_blank">hier</a> abrufen und dann unten im Formular eingeben
-				</div>
-				<div class="form-group row">
-					<label for="latCenter" class="col-sm-2 col-form-label">Latitude:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="latCenter" value="<?php echo $settings['latCenter'] ?? ''; ?>">
+					<h3>API</h3>
+					<div class="form-group row">
+						<label for="api_url" class="col-sm-2 col-form-label">API-URL:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light col-6 form-control" id="apiURL" value="<?php echo $row->apiURL ?? ''; ?>">
+						</div>
 					</div>
+					<div class="form-group row">
+						<label for="api_token" class="col-sm-2 col-form-label">API TOKEN:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="apiToken" value="<?php echo $row->apiToken ?? ''; ?>">
+						</div>
+						<label for="client_id" class="col-sm-2 col-form-label">API CLIENT ID:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="apiClientId" value="<?php echo $row->apiClientId ?? ''; ?>">
+						</div>
+					</div>
+					<h3>PayPal (<?php echo $row->payPalSandbox == 1 ? "TEST" : "PROD"; ?>)</h3>
+					<div class="form-group row">
+						<label for="payPal" class="col-sm-2 col-form-label">Einschalten</label>
+						<div class="col-sm-4">
+							<input type="checkbox" class="border bg-light form-control" id="payPal" value="1" <?php echo $row->payPal == 1 ? "checked" : ""; ?>>
+						</div>
+						<label for="payPal" class="col-sm-2 col-form-label">Benutze PayPal SANDBOX</label>
+						<div class="col-sm-4">
+							<input type="checkbox" class="border bg-light form-control" id="payPalSandbox" value="1" <?php echo $row->payPalSandbox == 1 ? "checked" : ""; ?>>
+						</div>
+						<label for="payPalClientId" class="col-sm-2 col-form-label">PayPal CLIENT ID:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="payPalClientId" value="<?php echo $row->payPalClientId ?? ''; ?>">
+						</div>
+						<label for="payPalClientSecret" class="col-sm-2 col-form-label">PayPal CLIENT SECRET:</label>
+						<div class="col-sm-4">
+							<input type="password" class="border bg-light form-control" id="payPalClientSecret" value="<?php echo $row->payPalClientSecret ?? ''; ?>">
+						</div>
+					</div>
+					<h3>Links</h3>
+					<div class="form-group row">
+						<label for="dsgvo" class="col-sm-2 col-form-label">DSGVO Link:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="dsgvoLink" value="<?php echo $row->dsgvoLink ?? ''; ?>">
+						</div>
 
-					<label for="lonCenter" class="col-sm-2 col-form-label">Longitude:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="lonCenter" value="<?php echo $settings['lonCenter'] ?? ''; ?>">
+						<label for="agb" class="col-sm-2 col-form-label">AGB Link:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="agbLink" value="<?php echo $row->agbLink ?? ''; ?>">
+						</div>
 					</div>
-
-					<label for="zoom" class="col-sm-2 col-form-label">Zoom:</label>
-					<div class="col-sm-4">
-						<input type="number" class="border bg-light form-control" id="zoom" value="<?php echo $settings['zoom'] ?: 15; ?>">
+					<div class="form-group row">
+						<label for="redirectLink" class="col-sm-2 col-form-label">Erfolgsseite:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light form-control" id="redirectLink" value="<?php echo $row->redirectLink ?? ''; ?>">
+						</div>
 					</div>
-				</div>
-				<h3>Links</h3>
-				<div class="form-group row">
-					<label for="dsgvo" class="col-sm-2 col-form-label">DSGVO Link:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="dsgvoLink" value="<?php echo $settings['dsgvoLink'] ?? ''; ?>">
+					<h3>Zusatztexte</h3>
+					<div class="form-group row">
+						<label for="dsgvo" class="col-sm-2 col-form-label">Text vor Buchung:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light form-control" id="textBeforeBooking" value="<?php echo $row->textBeforeBooking ?? ''; ?>">
+						</div>
 					</div>
-
-					<label for="agb" class="col-sm-2 col-form-label">AGB Link:</label>
-					<div class="col-sm-4">
-						<input type="text" class="border bg-light form-control" id="agbLink" value="<?php echo $settings['agbLink'] ?? ''; ?>">
-					</div>
-				</div>
-				<h3>Zusatztexte</h3>
-				<div class="form-group row">
-					<label for="dsgvo" class="col-sm-2 col-form-label">Text vor Buchung:</label>
-					<div class="col-sm-10">
-						<input type="text" class="border bg-light form-control" id="textBeforeBooking" value="<?php echo $settings['textBeforeBooking'] ?? ''; ?>">
-					</div>
-				</div>
-				<h3>Referrer URL (ID)</h3>
-				<input type="hidden" id="settingsReferrerId" value="<?php echo $settings['referrerId'] ? (int)$settings['referrerId'] : 0; ?>">
-				<div class="form-group row">
-					<label for="referrerId" class="col-sm-2 col-form-label">Referrer:</label>
-					<div class="col-sm-6">
-						<select class="border bg-light col-3 form-control" id="referrerId"><!-- via AJAX --></select>
-					</div>
-				</div>
-
-				<h3>Email Debug</h3>
-				<div class="form-group row">
-					<label for="debug" class="col-sm-2 col-form-label">Einschalten</label>
-					<div class="col-sm-10">
-						<input type="checkbox" class="border bg-light form-control" id="debug" value="1" <?php echo $settings['debug'] == 1 ? "checked" : ""; ?>>
-					</div>
-					<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
-					<div class="col-sm-10">
-						<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $settings['smtpServer'] ?? ''; ?>">
+					<h3>Referrer URL (ID)</h3>
+					<input type="hidden" id="settingsReferrerId" value="<?php echo $row->referrerId ? (int)$row->referrerId : 0; ?>">
+					<div class="form-group row">
+						<label for="referrerId" class="col-sm-2 col-form-label">Referrer:</label>
+						<div class="col-sm-6">
+							<select class="border bg-light col-3 form-control" id="referrerId"><!-- via AJAX --></select>
+						</div>
 					</div>
 
-					<label for="smtpUser" class="col-sm-2 col-form-label">User:</label>
-					<div class="col-sm-10">
-						<input type="text" class="border bg-light form-control" id="smtpUser" value="<?php echo $settings['smtpUser'] ?? ''; ?>">
+					<h3>Email Debug</h3>
+					<div class="form-group row">
+						<label for="debug" class="col-sm-2 col-form-label">Einschalten</label>
+						<div class="col-sm-10">
+							<input type="checkbox" class="border bg-light form-control" id="debug" value="1" <?php echo $row->debug == 1 ? "checked" : ""; ?>>
+						</div>
+						<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $row->smtpServer ?? ''; ?>">
+						</div>
+
+						<label for="smtpUser" class="col-sm-2 col-form-label">User:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light form-control" id="smtpUser" value="<?php echo $row->smtpUser ?? ''; ?>">
+						</div>
+
+						<label for="smtpPass" class="col-sm-2 col-form-label">Pass:</label>
+						<div class="col-sm-10">
+							<input type="password" class="border bg-light form-control" id="smtpPass" value="<?php echo $row->smtpPass ?? ''; ?>">
+						</div>
+
+						<label for="btnTestEmail" class="col-sm-2 col-form-label">Test Email:</label>
+						<div class="col-sm-10">
+							<button type="button" class="button button-danger" id="btnTestEmail">TEST</button>
+						</div>
 					</div>
 
-					<label for="smtpPass" class="col-sm-2 col-form-label">Pass:</label>
-					<div class="col-sm-10">
-						<input type="password" class="border bg-light form-control" id="smtpPass" value="<?php echo $settings['smtpPass'] ?? ''; ?>">
+					<div class="form-row align-items-left">
+						<div class="col-sm-12 my-2">
+							<button type="button" class="button button-danger" id="btnSave">Save</button>
+
+							<button type="button" class="button button-primary" id="btnLoadAGBS">Load AGBS-Link from VABS</button>
+
+							<button type="button" class="button button-primary" id="btnLoadDSGVO">Load DSGVO-Link from VABS</button>
+						</div>
+						<span class="loading"></span>
 					</div>
 
-					<label for="btnTestEmail" class="col-sm-2 col-form-label">Test Email:</label>
-					<div class="col-sm-10">
-						<button type="button" class="button button-danger" id="btnTestEmail">TEST</button>
+					<div class="form-group row">
+						<p id="response"></p>
 					</div>
-				</div>
 
-				<h3>Success/Erfolg</h3>
-				<div class="form-group row">
-					<label for="redirectLink" class="col-sm-2 col-form-label">Success/Erfolgs-Page:</label>
-					<div class="col-sm-6">
-						<input type="text" class="border bg-light form-control" id="redirectLink" value="<?php echo $settings['redirectLink'] ?? ''; ?>">
-					</div>
-				</div>
-				<div class="form-row align-items-left">
-					<div class="col-sm-6 my-2">
-						<button type="button" class="button button-danger" id="btnSave">Save</button>
+					<div class="alert" id="vabs__backendErrorMessage" style="display: none;"></div>
 
-						<button type="button" class="button button-primary" id="btnLoadAGBS">Load AGBS-Link from VABS</button>
-
-						<button type="button" class="button button-primary" id="btnLoadDSGVO">Load DSGVO-Link from VABS</button>
-					</div>
-					<span class="loading"></span>
 				</div>
 
-				<div class="form-group row">
-					<p id="response"></p>
-				</div>
+			</form>
+			<?php
+		} catch (Exception $e){
+			echo $e->getMessage ();
+		}
 
-				<div class="alert" id="backendErrorMessage" style="display: none;"></div>
-
-			</div>
-
-		</form>
-		<?php
 		$this->HTMLFooter ();
 
 	}
@@ -392,8 +383,14 @@ class Plugin
 		try {
 
 			$Settings = new Settings();
-			$settings = $Settings->Load ();
-			$debug = $settings['debug'] == 1;
+			if(!$Settings->Load ()){
+				throw new Exception("Settings could not be loaded");
+			}
+			$row = $Settings->row;
+			if(!$row instanceof Settings){
+				throw new Exception("row wasn't instance of Settings3");
+			}
+			$debug = $row->debug == 1;
 
 			if ($attributes['type'] == 'beachchair_booking') {
 
@@ -404,18 +401,18 @@ class Plugin
 
 				$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-				$isSandBox = (int)$settings['payPalSandbox'] === 1;
+				$isSandBox = (int)$row->payPalSandbox === 1;
 
-				define ("SMTP_USER", $settings['smtpUser']);
-				define ("SMTP_PASS", $settings['smtpPass']);
-				define ("SMTP_SERVER", $settings['smtpServer']);
+				define ("SMTP_USER", $row->smtpUser);
+				define ("SMTP_PASS", $row->smtpPass);
+				define ("SMTP_SERVER", $row->smtpServer);
 
 				if (!empty($token) && !empty($PayerID)) {
 
 					if ($isSandBox) {
-						$environment = new SandboxEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+						$environment = new SandboxEnvironment($row->payPalClientId, $row->payPalClientSecret);
 					} else {
-						$environment = new ProductionEnvironment($settings['payPalClientId'], $settings['payPalClientSecret']);
+						$environment = new ProductionEnvironment($row->payPalClientId, $row->payPalClientSecret);
 					}
 
 					try {
@@ -478,7 +475,7 @@ class Plugin
 							Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
 						}
 
-						echo "<script type=\"text/javascript\">window.location = '".$settings['redirectLink']."';</script>";
+						echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
 					} else {
 						$errorMessage = "Capture ID was empty or couldn't get";
 						Log::Log ($errorMessage);
@@ -490,13 +487,13 @@ class Plugin
 				ob_start ();
 				?>
 				<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
-					This is a success alert—check it out!
+					Das hat geklappt.....
 				</div>
-				<div id="bookingContainer">
+				<div id="vabs__bookingContainer">
 
 					<form id="form" class="row gx-3 gy-2 align-items-center">
 
-						<div class="container" id="dateSelectContainer">
+						<div class="vabs__container" id="vabs__dateSelectContainer">
 							<h5>Wähle einen oder mehrere Tag(e)</h5>
 							<h3>An- und Abreisetag anklicken!</h3>
 							<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
@@ -506,13 +503,13 @@ class Plugin
 							</div>
 						</div>
 
-						<div class="container normal" id="locationSelectContainerNormal" style="display: none">
+						<div class="vabs__container normal" id="vabs__locationSelectContainerNormal" style="display: none">
 							<h5>Strandabschnitt wählen</h5>
 							<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
 							<div class="locationSelect"><!-- via AJAX --></div>
 						</div>
 
-						<div class="container hopping" id="locationSelectContainerHopping" style="display: none">
+						<div class="vabs__container hopping" id="vabs__locationSelectContainerHopping" style="display: none">
 							<h5>Strandabschnitt wählen</h5>
 							<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
 							<div class="row g-3">
@@ -525,36 +522,36 @@ class Plugin
 							</div>
 						</div>
 
-						<div class="container normal" id="mapsContainer">
+						<div class="vabs__container normal" id="vabs__mapsContainer">
 
-							<div id="leafLetMap"></div>
-							<div id="flexMap">
+							<div id="vabs__leafLetMap"></div>
+							<div id="vabs__flexMap">
 
-								<div class="flexContainer">
+								<div class="vabs__flexContainer">
 
-									<div class="flexTopContainer">
+									<div class="vabs__flexTopContainer">
 
-										<h2 class="flexHeadline"><!-- via Ajax --></h2>
-										<button class="flexBtnBack">X</button>
-
-									</div>
-
-									<div class="flexRowContainer">
-
-										<div class="flexRows"><!-- via AJAX --></div>
+										<h2 class="vabs__flexHeadline"><!-- via Ajax --></h2>
+										<button class="vabs__flexBtnBack">X</button>
 
 									</div>
 
-									<div id="chair-card" style="display:none;">
-										<div class="chair-container">
-											<button type="button" class="btn btn-secondary btnChairClose">X</button>
-											<div class="chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-											<div class="chair-body">
+									<div class="vabs__flexRowContainer">
+
+										<div class="vabs__flexRows"><!-- via AJAX --></div>
+
+									</div>
+
+									<div id="vabs__chair-card" style="display:none;">
+										<div class="vabs__chair-container">
+											<button type="button" class="btn btn-secondary vabs__btnChairClose">X</button>
+											<div class="vabs__chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
+											<div class="vabs__chair-body">
 												<div>
-													<strong style="display: block;">Strandkorb Nummer: <span id="chairCardName"></span></strong> <span style="display: block;">Modell: <span id="chairCardType"></span></span>
+													<strong style="display: block;">Strandkorb Nummer: <span id="vabs__chairCardName"></span></strong> <span style="display: block;">Modell: <span id="vabs__chairCardType"></span></span>
 												</div>
-												<button type="button" id="chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
-												<button type="button" id="chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
+												<button type="button" id="vabs__chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
+												<button type="button" id="vabs__chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
 											</div>
 										</div>
 									</div>
@@ -564,7 +561,7 @@ class Plugin
 							</div>
 						</div>
 
-						<div class="container" id="personalDataContainer" style="display: none">
+						<div class="vabs__container" id="vabs__personalDataContainer" style="display: none">
 
 							<h5>Vervollständige die persönlichen Daten</h5>
 
@@ -604,25 +601,25 @@ class Plugin
 
 						</div>
 
-						<div class="container" id="shoppingCartContainerWrapper" style="display: none">
+						<div class="vabs__container" id="vabs__shoppingCartContainerWrapper" style="display: none">
 
 							<h5>Zusammenfassung &amp; Buchung</h5>
 
-							<div id="shoppingCartContainer">
-								<div id="shoppingCartHeader">
+							<div id="vabs__shoppingCartContainer">
+								<div id="vabs__shoppingCartHeader">
 									<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
 
 								</div>
-								<div id="shoppingCartList">
+								<div id="vabs__shoppingCartList">
 									<!-- via AJAX -->
 								</div>
-								<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $settings['agbLink']; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $settings['dsgvoLink']; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+								<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
 
-								<div id="paymentSection">
+								<div id="vabs__paymentSection">
 									<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
 									<?php
 
-									if ($settings['payPal'] == 1) {
+									if ($row->payPal == 1) {
 										?>
 
 										<div class="form-check form-check-inline">
@@ -645,14 +642,14 @@ class Plugin
 									?>
 								</div>
 								<?php
-								if (!empty($settings['textBeforeBooking'])) {
+								if (!empty($row->textBeforeBooking)) {
 									?>
-									<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($settings['textBeforeBooking']); ?></div>
+									<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($row->textBeforeBooking); ?></div>
 									<?php
 								}
 								?>
-								<button type="button" id="btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
-								<div class="alert" id="backendErrorMessage" style="display: none; margin-top: 15px"></div>
+								<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
+								<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
 							</div>
 
 						</div>

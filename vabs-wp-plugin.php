@@ -16,7 +16,7 @@
  * Plugin Name:       VABS Form Generator
  * Plugin URI:        https://github.com/g-kanoufi/wp-cleanup-and-basic-functions
  * Description:       Provides forms to send data request to the VABS API
- * Version:           1.0.0
+ * Version:           2.0.0
  * Author:            Ronny Drechsler-Hildebrandt
  * Author URI:        https://drechsler-development.de
  * License:           GPL-2.0+
@@ -33,6 +33,13 @@ define ('VABS_PLUGIN_PATH', str_replace (ABSPATH, '/', __DIR__));
 
 require_once 'vendor/autoload.php';
 require_once 'config.php';
+
+
+//For the DD->Database class we need to define some constances
+//const DB_HOST = DB_HOST; //Already defined in the wp-config
+//const DB_NAME = DB_NAME; //Already defined in the wp-config
+//const DB_USER = DB_USER; //Already defined in the wp-config
+const DB_PASS = DB_PASSWORD;
 
 use VABS\Plugin;
 

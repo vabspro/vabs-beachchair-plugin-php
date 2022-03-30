@@ -2,10 +2,15 @@
 
 namespace VABS;
 
+use DD\Database;
 use Exception;
+use PDO;
+use PDOException;
 
 class Settings
 {
+
+	const VERSION = "2.00";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';
@@ -21,10 +26,6 @@ class Settings
 	public string $payPalClientId     = '';
 	public string $payPalClientSecret = '';
 
-	public int    $zoom      = 15;
-	public string $latCenter = '';
-	public string $lonCenter = '';
-
 	public string $textBeforeBooking  = '';
 
 	//SMTP
@@ -33,52 +34,66 @@ class Settings
 	public string $smtpPass  = '';
 
 	public int $debug  = 0;
+	/**
+	 * @var mixed
+	 */
+	public        $row;
+	public string $errorMessage = '';
+	public string $versionNumber = '';
+
+	public function __construct () {
+
+		$this->CheckSettings();
+
+	}
 
 	//Loads the settings from a settings file
 
 	/**
-	 * Loads settings from a file or create empty settings file if settings file doesn't exists
-	 * @throws Exception
+	 * @return bool
 	 */
-	public function Load() : array {
+	public function Load() : bool {
 
-		//Create file if not exists
-		if(!file_exists ($this->path)){
-			$data = [
-				'apiToken'           => '',
-				'apiClientId'        => '',
-				'apiURL'             => '',
-				'referrerId'         => 0,
-				'dsgvoLink'          => '',
-				'agbLink'            => '',
-				'redirectLink'       => '',
-				'payPal'             => 0,
-				'payPalSandbox'      => 0,
-				'payPalClientId'     => '',
-				'payPalClientSecret' => '',
-				'textBeforeBooking'  => '',
-				'zoom'               => 15,
-				'latCenter'          => '',
-				'lonCenter'          => '',
-				'smtpServer'         => '',
-				'smtpUser'           => '',
-				'smtpPass'           => '',
-				'debug'              => 0,
-			];
-			$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');
-			if($write === false){
-				throw new Exception("File could not be written");
-			}
+		try {
+
+			$conPDO = Database::getInstance ();
+
+			$SQL = "SELECT  
+						 
+						IFNULL(apiToken,'') as apiToken,
+						IFNULL(apiClientId,'') as apiClientId,
+						IFNULL(apiURL,'') as apiURL,
+						IFNULL(referrerId,0) as referrerId,
+						IFNULL(dsgvoLink,'') as dsgvoLink,
+						IFNULL(agbLink,'') as agbLink,
+						IFNULL(redirectLink,'') as redirectLink,
+						IFNULL(payPal,0) as payPal,
+						IFNULL(payPalSandbox,0) as payPalSandbox,
+						IFNULL(payPalClientId,'') as payPalClientId,
+						IFNULL(payPalClientSecret,'') as payPalClientSecret,
+						IFNULL(textBeforeBooking,'') as textBeforeBooking,
+						IFNULL(smtpServer,'') as smtpServer,
+						IFNULL(smtpUser,'') as smtpUser,
+						IFNULL(smtpPass,'') as smtpPass,
+						IFNULL(debug,0) as debug,
+						IFNULL(versionNumber,'') as versionNumber
+					FROM
+						vabs_settings";
+			$stm = $conPDO->prepare ($SQL);
+			$stm->execute();
+
+			$stm->setFetchMode (PDO::FETCH_CLASS, __CLASS__);
+			$this->row = $stm->fetch ();
+
+			return true;
+
+		} catch (Exception $e){
+			$this->errorMessage = $e->getMessage ();
 		}
 
-		include $this->path;
-		if(!empty($settings)){
-			return (array)$settings;
-		}
+		return false;
 
-		return [];
 	}
-
 
 	/**
 	 * Saves the settings into a settings file
@@ -87,43 +102,180 @@ class Settings
 	 */
 	public function Save () : bool {
 
-		if (empty($this->apiURL)){
-			throw new Exception("API URL must not be empty");
+		try {
+
+			$conPDO = Database::getInstance ();
+
+			if (empty($this->apiURL)) {
+				throw new Exception("API URL must not be empty");
+			}
+
+			if (empty($this->apiToken)) {
+				throw new Exception("API TOKEN must not be empty");
+			}
+
+			if (empty($this->apiClientId)) {
+				throw new Exception("API ClientId must not be empty");
+			}
+
+			$SQL = "UPDATE  
+						vabs_settings 
+					SET 
+						apiToken = :apiToken,
+						apiClientId = :apiClientId,
+						apiURL = :apiURL,
+						referrerId = :referrerId,
+						dsgvoLink = :dsgvoLink,
+						agbLink = :agbLink,
+						redirectLink = :redirectLink,
+						payPal = :payPal,
+						payPalSandbox = :payPalSandbox,
+						payPalClientId = :payPalClientId,
+						payPalClientSecret = :payPalClientSecret,
+						textBeforeBooking = :textBeforeBooking,
+						smtpServer = :smtpServer,
+						smtpUser = :smtpUser,
+						smtpPass = :smtpPass,
+						debug = :debug";
+			$stm = $conPDO->prepare ($SQL);
+			$stm->bindValue (':apiToken', $this->apiToken);
+			$stm->bindValue (':apiClientId', $this->apiClientId);
+			$stm->bindValue (':apiURL', $this->apiURL);
+			$stm->bindValue (':referrerId', $this->referrerId, PDO::PARAM_INT);
+			$stm->bindValue (':dsgvoLink', $this->dsgvoLink);
+			$stm->bindValue (':agbLink', $this->agbLink);
+			$stm->bindValue (':redirectLink', $this->redirectLink);
+			$stm->bindValue (':payPal', $this->payPal, PDO::PARAM_INT);
+			$stm->bindValue (':payPalSandbox', $this->payPalSandbox, PDO::PARAM_INT);
+			$stm->bindValue (':payPalClientId', $this->payPalClientId);
+			$stm->bindValue (':payPalClientSecret', $this->payPalClientSecret);
+			$stm->bindValue (':textBeforeBooking', $this->textBeforeBooking);
+			$stm->bindValue (':smtpServer', $this->smtpServer);
+			$stm->bindValue (':smtpUser', $this->smtpUser);
+			$stm->bindValue (':smtpPass', $this->smtpPass);
+			$stm->bindValue (':debug', $this->debug, PDO::PARAM_INT);
+
+			$stm->execute ();
+
+			return true;
+
+		} catch (Exception $e) {
+			$this->errorMessage = $e->getMessage ();
 		}
 
-		if (empty($this->apiToken)) {
-			throw new Exception("API TOKEN must not be empty");
+		return false;
+
+	}
+
+	/**
+	 * @return void
+	 */
+	private function CheckSettings() {
+
+		try {
+
+			$conPDO = Database::getInstance ();
+
+			$SQL = "SHOW TABLES LIKE 'vabs_settings'";
+			$stm = $conPDO->prepare ($SQL);
+			$stm->execute ();
+			if($stm->rowCount () == 0){
+
+				$SQL = "CREATE TABLE IF NOT EXISTS `vabs_settings` (
+							`apiToken` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`apiClientId` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`apiURL` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`dsgvoLink` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`agbLink` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`redirectLink` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`textBeforeBooking` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`referrerId` SMALLINT(6) NULL DEFAULT NULL,
+							`payPal` TINYINT(1) NULL DEFAULT 0,
+							`payPalSandbox` TINYINT(1) NULL DEFAULT 1,
+							`payPalClientId` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`payPalClientSecret` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`debug` TINYINT(1) NULL DEFAULT 0,
+							`smtpServer` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`smtpUser` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`smtpPass` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci'
+						) COLLATE='utf8_general_ci' ENGINE=InnoDB;";
+				$stm = $conPDO->prepare ($SQL);
+				$stm->execute ();
+
+				$SQL = "INSERT INTO 
+							vabs_settings 
+						SET 
+							apiToken = :apiToken,
+							apiClientId = :apiClientId,
+							apiURL = :apiURL,
+							referrerId = :referrerId,
+							dsgvoLink = :dsgvoLink,
+							agbLink = :agbLink,
+							redirectLink = :redirectLink,
+							payPal = :payPal,
+							payPalSandbox = :payPalSandbox,
+							payPalClientId = :payPalClientId,
+							payPalClientSecret = :payPalClientSecret,
+							textBeforeBooking = :textBeforeBooking,
+							smtpServer = :smtpServer,
+							smtpUser = :smtpUser,
+							smtpPass = :smtpPass,
+							versionNumber = :versionNumber,
+							debug = :debug";
+
+				if(file_exists ($this->path)){
+					include $this->path;
+					if (!empty($settings)) {
+						$settings = (array)$settings;
+
+						$stm = $conPDO->prepare ($SQL);
+						$stm->bindValue (':apiToken', $settings['apiToken']);
+						$stm->bindValue (':apiClientId', $settings['apiClientId']);
+						$stm->bindValue (':apiURL', $settings['apiURL']);
+						$stm->bindValue (':referrerId', $settings['referrerId'], PDO::PARAM_INT);
+						$stm->bindValue (':dsgvoLink', $settings['dsgvoLink']);
+						$stm->bindValue (':agbLink', $settings['agbLink']);
+						$stm->bindValue (':redirectLink', $settings['redirectLink']);
+						$stm->bindValue (':payPal', $settings['payPal'], PDO::PARAM_INT);
+						$stm->bindValue (':payPalSandbox', $settings['payPalSandbox'], PDO::PARAM_INT);
+						$stm->bindValue (':payPalClientId', $settings['payPalClientId']);
+						$stm->bindValue (':payPalClientSecret', $settings['payPalClientSecret']);
+						$stm->bindValue (':textBeforeBooking', $settings['textBeforeBooking']);
+						$stm->bindValue (':smtpServer', $settings['smtpServer']);
+						$stm->bindValue (':smtpUser', $settings['smtpUser']);
+						$stm->bindValue (':smtpPass', $settings['smtpPass']);
+						$stm->bindValue (':versionNumber', '1.03');
+						$stm->bindValue (':debug', $settings['debug'], 1);
+					}
+				}else{
+					$stm = $conPDO->prepare ($SQL);
+					$stm->bindValue (':apiToken', '');
+					$stm->bindValue (':apiClientId', '');
+					$stm->bindValue (':apiURL', '');
+					$stm->bindValue (':referrerId', 0, PDO::PARAM_INT);
+					$stm->bindValue (':dsgvoLink', '');
+					$stm->bindValue (':agbLink', '');
+					$stm->bindValue (':redirectLink', '');
+					$stm->bindValue (':payPal', 0, PDO::PARAM_INT);
+					$stm->bindValue (':payPalSandbox', 1, PDO::PARAM_INT);
+					$stm->bindValue (':payPalClientId', '');
+					$stm->bindValue (':payPalClientSecret', '');
+					$stm->bindValue (':textBeforeBooking', '');
+					$stm->bindValue (':smtpServer', '');
+					$stm->bindValue (':smtpUser', '');
+					$stm->bindValue (':smtpPass', '');
+					$stm->bindValue (':versionNumber', '1.03');
+					$stm->bindValue (':debug', '', 1);
+				}
+
+				$stm->execute ();
+
+			}
+
+		} catch (PDOException|Exception $e) {
+			$this->errorMessage = $e->getMessage ();
 		}
-
-		if (empty($this->apiClientId)) {
-			throw new Exception("API ClientId must not be empty");
-		}
-
-		$data = [
-			'apiToken'           => $this->apiToken,
-			'apiClientId'        => $this->apiClientId,
-			'apiURL'             => $this->apiURL,
-			'referrerId'         => $this->referrerId ? : 0,
-			'dsgvoLink'          => $this->dsgvoLink ? : null,
-			'agbLink'            => $this->agbLink ? : null,
-			'redirectLink'       => $this->redirectLink ? : null,
-			'payPal'             => $this->payPal ?? 0,
-			'payPalSandbox'      => $this->payPalSandbox ?? 1,
-			'payPalClientId'     => $this->payPalClientId ? : '',
-			'payPalClientSecret' => $this->payPalClientSecret ? : '',
-			'textBeforeBooking'  => $this->textBeforeBooking ? strip_tags ($this->textBeforeBooking) : '',
-			'zoom'               => $this->zoom ?? 1,
-			'latCenter'          => $this->latCenter ?? '',
-			'lonCenter'          => $this->lonCenter ?? '',
-			'smtpServer'         => $this->smtpServer ?? '',
-			'smtpUser'           => $this->smtpUser ?? '',
-			'smtpPass'           => $this->smtpPass ?? '',
-			'debug'           	 => $this->debug ?? 0,
-		];
-
-		$write = file_put_contents ($this->path, '<?php $settings = '.var_export ($data, true).';');
-
-		return $write !== false;
 
 	}
 
