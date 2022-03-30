@@ -215,7 +215,7 @@ class Plugin
 
 			?>
 			<h1>Settings</h1>
-			<h5>Version <span class="badge-primary" style="color: red"><?php echo $row->versionNumber; ?></span></h5>
+			<h5>Version <span class="badge-primary" style="color: red"><?php echo Settings::VERSION; ?></span></h5>
 			<form action="" class="form-inline" method="POST">
 
 				<div class="form">
