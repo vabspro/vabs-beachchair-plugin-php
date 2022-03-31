@@ -58,6 +58,14 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
+### 2.0 ###
+
+* send invoice even though PayMent via PayPal has not been finished. 
+
+### 1.0 ###
+
+* save settings in a database instead of a file
+
 ### 0.3 ###
 
 * add vacancy search on the beach chair booking form in case no booking is available for only one chair. (beach chair
