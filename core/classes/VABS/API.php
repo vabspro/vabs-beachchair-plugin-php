@@ -335,7 +335,7 @@ class API
 	 * @param string $captureId
 	 * @return bool|string
 	 */
-	public function PostPayment (int $salesInvoiceId, string $totalAmountFormatted, int $paymentMethodId, string $token, string $PayerID, string $captureId) {
+	public function AddPayment (int $salesInvoiceId, string $totalAmountFormatted, int $paymentMethodId, string $token, string $PayerID, string $captureId) {
 
 		$requestUrl = '/sales/invoice/payment';
 
@@ -358,7 +358,7 @@ class API
 	 * @param int $statusId
 	 * @return bool|string
 	 */
-	public function PutUpdateSalesInvoice (int $salesHeaderId, int $salesInvoiceId, int $statusId) {
+	public function UpdateSalesInvoiceStatus (int $salesHeaderId, int $salesInvoiceId, int $statusId) {
 
 		$requestUrl = '/sales/invoice/statusupdate';
 
@@ -381,7 +381,6 @@ class API
 
 		return $this->SendPostCurlRequest ($requestUrl, [
 			'sales_header_id'  => $salesHeaderId,
-
 		]);
 
 	}

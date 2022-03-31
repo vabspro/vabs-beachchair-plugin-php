@@ -14,50 +14,14 @@ use PayPalHttp\HttpException;
 class Plugin
 {
 
-	/**
-	 * The unique identifier of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string $pluginName The string used to uniquely identify this plugin.
-	 */
-	public string $pluginName;
-
-	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string $version The current version of the plugin.
-	 */
-	public string $version;
-
-	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var Settings
-	 */
-	private Settings $Settings;
 
 	private string $jquery = 'jquery';
 	//private string $jquery = 'jquery-360';
 
 	/**
-	 * Define the core functionality of the plugin.
 	 *
-	 * Set the plugin name and the plugin version that can be used throughout the plugin.
-	 * Load the dependencies, define the locale, and set the hooks for the admin area and
-	 * the public-facing side of the site.
-	 *
-	 * @since    1.0.0
 	 */
 	public function __construct () {
-
-		$this->pluginName = 'vabs-wp-plugin';
-		$this->version    = '1.0.0';
-		$this->Settings = new Settings();
 
 	}
 
@@ -187,16 +151,6 @@ class Plugin
 
 	#endregion
 
-	public function GetPluginName (): string {
-
-		return $this->pluginName;
-	}
-
-	public function GetVersion (): string {
-
-		return $this->version;
-	}
-
 	#region ADMIN AREA
 
 	public function ShowSettingsForm () {
@@ -215,7 +169,7 @@ class Plugin
 
 			?>
 			<h1>Settings</h1>
-			<h5>Version <span class="badge-primary" style="color: red"><?php echo Settings::VERSION; ?></span></h5>
+			<h5>Version <span class="badge-primary" style="color: red"><?php echo $row->versionNumber; ?></span></h5>
 			<form action="" class="form-inline" method="POST">
 
 				<div class="form">
@@ -465,10 +419,10 @@ class Plugin
 					}
 
 					if (!empty($captureId)) {
+
 						$API = new API();
-						$API->PostPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
-						$API->PutUpdateSalesInvoice ($salesHeaderId, $salesInvoiceId, 5);
-						$API = new API();
+						$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+						$API->UpdateSalesInvoiceStatus ($salesHeaderId, $salesInvoiceId, 5);
 						$API->SendInvoice ($salesHeaderId);
 
 						if ($debug) {

@@ -5,10 +5,6 @@ jQuery(document).ready(function ($) {
     //Declare Variables
     let directory = '/wp-content/plugins/vabs-wp-plugin/core/ajax';
 
-    let zoomLevel = 14;
-    let latCenter = '';
-    let lonCenter = '';
-
     let allBeachChairs = [];
     let freeBeachChairs = [];
     let bookableChairs = [];
@@ -173,43 +169,6 @@ jQuery(document).ready(function ($) {
         });
 
     }
-
-    /*
-    let LoadMapSettings = function () {
-
-        $.ajax({
-
-            url: directory + "/ajax.php",
-
-            type: "POST",
-
-            data: {
-                method: 'LoadMapSettings',
-            },
-
-            dataType: "json"
-
-        }).done(function () {
-
-            HideLoadingOverlay();
-
-        }).then(function (response) {
-
-            let error = response.error;
-            let data = response.data;
-
-            latCenter = data.latCenter;
-            lonCenter = data.lonCenter;
-            zoomLevel = data.zoom;
-
-        }).fail(function (error) {
-
-            ShowErrorMessage("Fehler", error);
-
-        });
-
-    }
-    */
 
     //Handles
 
@@ -627,7 +586,6 @@ jQuery(document).ready(function ($) {
         }
 
     }
-
 
     let ShowBeachChairMap = function () {
         $('#vabs__flexMap').show();
@@ -1067,14 +1025,13 @@ jQuery(document).ready(function ($) {
 
                     //Pay per PayPal
                     if (confirmationUrl) {
-                        //window.open(confirmationUrl, '_self');
                         window.location.replace(confirmationUrl);
-                        //Pay per Invoice
+                    //Pay per Invoice
                     } else if (redirectLink != '') {
-                        //window.location.replace(redirectLink);
                         window.open(redirectLink, '_self');
+                    //Hide Form
                     } else {
-                        //Hide Form
+
                         vabs__bookingContainer.remove();
                         //Show Success Message
                         successMessage.show();

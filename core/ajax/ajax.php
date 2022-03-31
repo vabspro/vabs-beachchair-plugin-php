@@ -388,6 +388,7 @@ try {
 		############
 
 		#region Create Contact
+
 		$Contact            = new Contact();
 		$Contact->firstname = $firstName;
 		$Contact->lastname  = $lastName;
@@ -410,6 +411,7 @@ try {
 		#endregion
 
 		#region Create SalesOrderHeader
+
 		$API      = new API();
 		$response = $API->CreateSalesOrderHeader ($contactId,$comment);
 		$array    = json_decode ($response, true);
@@ -424,6 +426,7 @@ try {
 		#endregion
 
 		#region Create SalesOrderLines
+
 		foreach ($lines as $line) {
 
 			$quantity = 1;
@@ -453,9 +456,11 @@ try {
 
 
 		}
+
 		#endregion
 
 		#region Create Invoice
+
 		$API      = new API();
 		$response = $API->CreateSalesInvoice ($salesHeaderId);
 		$array    = json_decode ($response, true);
@@ -466,6 +471,9 @@ try {
 		}
 
 		$_SESSION['salesInvoiceId'] = $salesInvoiceId;
+
+		//Send Invoice via PDF
+		$API->SendInvoice ($salesHeaderId);
 
 		#endregion
 
@@ -483,6 +491,8 @@ try {
 		#region PAYPAL
 
 		if ($paymentMethodId == PAYMENT_METHOD_PAYPAL) {
+
+			$payPalErrorMessage = 'PayPal steht momentan nicht zur Verfügung. Bitte überweisen Sie den Betrag laut Aufforderung in der Email, die wir Ihnen gerade geschickt haben!';
 
 			$usePayPal = $row->payPal == 1;
 			$isSandBox = (int)$row->payPalSandbox === 1;
@@ -523,7 +533,6 @@ try {
 
 			//Items
 
-			//TODO: Get Unit NET Price and TaxAmount
 			$totalTaxAmountFormatted = number_format($totalTaxAmount,2);
 			$totalNetAmountFormatted = number_format($totalNetAmount,2);
 			$totalAmountFormatted = number_format($totalNetAmount + $totalTaxAmount,2);
@@ -536,23 +545,18 @@ try {
 			$Tax->currency_code = 'EUR';
 			$Tax->value         = "$totalTaxAmountFormatted";
 
-			//Todo: get Ticket properties
-
 			$PayPalItem              = new PayPalItem();
 			$PayPalItem->name        = "Strandkorbbuchung";
 			$PayPalItem->description = "Komplett";
 			$PayPalItem->unit_amount = (array)$UnitAmount;
 			$PayPalItem->tax         = (array)$Tax;
 
-			//Todo: get quantity for each item instead of complete order
 			$quantity = 1;
 			$PayPalItem->quantity    = "$quantity";
 
 			$items[] = (array)$PayPalItem;
 
 			//Amount
-
-			//TODO: Get NET Price and TaxAmount
 
 			$TotalAmount                = new PayPalValues();
 			$TotalAmount->currency_code = 'EUR';
@@ -566,8 +570,6 @@ try {
 			$Breakdown->item_total = (array)$TotalAmount;
 			$Breakdown->tax_total  = (array)$TaxTotal;
 
-			//TODO: Get TOTAL Price and Tax
-
 			$PayPalAmount                = new PayPalAmount();
 			$PayPalAmount->value         = "$totalAmountFormatted";
 			$PayPalAmount->currency_code = 'EUR';
@@ -578,7 +580,6 @@ try {
 			$PayPalPurchaseUnit->amount       = (array)$PayPalAmount;
 			$PayPalPurchaseUnit->reference_id = "$salesHeaderId";
 			$PayPalPurchaseUnit->items        = (array)$items;
-			//$PayPalPurchaseUnit->description = 'Beschreibung'; //TODO Check if useless
 			$PayPalPurchaseUnit->shipping = (array)$PayPalShipping;
 
 			//PayPalApplicationContext
@@ -595,28 +596,15 @@ try {
 			$purchaseUnits[]                  = (array)$PayPalPurchaseUnit;
 			$PayPalOrder->purchase_units      = $purchaseUnits;
 
-			//Show Array with pre
-			/*echo '<pre>';
-			print_r($PayPalOrder);
-			echo '</pre>';*/
-
 			$PayPalRequestBody = new PayPalRequestBody($PayPalOrder);
 			$requestBody       = (array)$PayPalOrder; //$PayPalRequestBody->requestBody;
 
-			//$request->body = $body;
 			$request->body = $requestBody;
-
-			/*echo '<pre>';
-			print_r($requestBody);
-			echo '</pre>';*/
 
 			try {
 
 				// Call API with your client and get a response for your call
 				$response = $client->execute ($request);
-				$var      = print_r ($response, true);
-
-				//\DD\Mailer\Mailer::SendAdminMail ("File: ".__FILE__."<br>Place: Request<br>Response: ".$var, \DD\Mailer\Mailer::EMAIL_SUBJECT_DEBUG);
 
 				if ($response->statusCode == 201) {
 					$token = $response->result->id ?? '';
@@ -626,13 +614,14 @@ try {
 						$responseArray['confirmationUrl'] = $link;
 
 					} else {
-						$responseArray['error'] = '1::PayPal steht momentan nicht zur Verfügung. Bitte wählen Sie eine andere Zahlungsmethode. Fehler: Kein Token oder Confirmation-Link zur Verfügung gestellt';
+						$responseArray['error'] = $payPalErrorMessage;
+						Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: Fehler: Kein Token oder Confirmation - Link zur Verfügung gestellt", Mailer::EMAIL_SUBJECT_EXCEPTION);
 					}
 				} else {
 					if ($isSandBox) {
 						$responseArray['error'] = json_encode ($response);
 					} else {
-						$responseArray['error'] = '2::PayPal steht momentan nicht zur Verfügung. Bitte wählen Sie eine andere Zahlungsmethode. Fehler: Falscher StatusCode.';
+						$responseArray['error'] = $payPalErrorMessage;
 						Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: ".json_encode ($response), Mailer::EMAIL_SUBJECT_EXCEPTION);
 						//TODO: Update SalesOrder/Invoice with Status
 
@@ -645,7 +634,7 @@ try {
 				if ($isSandBox) {
 					$responseArray['error'] = "3::StatusCode: ".$e->statusCode." Error: ".$e->getMessage ();
 				} else {
-					$responseArray['error'] = '3::PayPal steht momentan nicht zur Verfügung. Bitte wählen Sie eine andere Zahlungsmethode. Fehler beim Ausführen des Requests.';
+					$responseArray['error'] = $payPalErrorMessage;
 					Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: 3::StatusCode: ".$e->statusCode." Error: ".$e->getMessage (), Mailer::EMAIL_SUBJECT_EXCEPTION);
 				}
 
@@ -654,14 +643,12 @@ try {
 				if ($isSandBox) {
 					$responseArray['error'] = "IOException. Error: ".$e->getMessage ();
 				} else {
-					$responseArray['error'] = '4::PayPal steht momentan nicht zur Verfügung. Bitte wählen Sie eine andere Zahlungsmethode. Fehler beim Ausführen des Requests.';
+					$responseArray['error'] = $payPalErrorMessage;
+					Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: 3::StatusCode: ".$e->getMessage ()." Error: ".$e->getMessage (), Mailer::EMAIL_SUBJECT_EXCEPTION);
 				}
 
 			}
 
-		}else{
-			$API = new API();
-			$API->SendInvoice ($salesHeaderId);
 		}
 
 		#endregion
@@ -691,26 +678,6 @@ try {
 		$responseArray['data'] = '[generate_vabs_form type="'.$formType.'" agb="'.$row->agbLink.'" datenschutz="'.$row->dsgvoLink.'" redirectLink="'.$row->redirectLink.'"]';
 
 	}
-
-	/*
-	if ($method == 'LoadMapSettings') {
-
-		$Settings = new Settings();
-		if (!$Settings->Load ()) {
-			throw new Exception("Einstellungen konnten nicht geladen werden");
-		}
-		$row = $Settings->row;
-		if (!$row instanceof Settings) {
-			throw new Exception("row wasn't instance of Settings");
-		}
-
-		$responseArray['data']['zoom']  = $array['zoom'];
-		$responseArray['data']['latCenter']  = $array['latCenter'];
-		$responseArray['data']['lonCenter']  = $array['lonCenter'];
-		$responseArray['error'] = $array['error'] ?? '';
-
-	}
-	*/
 
 	if ($method == 'SendTestEmail') {
 
