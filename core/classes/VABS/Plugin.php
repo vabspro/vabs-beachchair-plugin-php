@@ -586,7 +586,6 @@ class Plugin
 										<?php
 									} else {
 										?>
-										Ich bezahle via:
 										<div class="form-check form-check-inline">
 											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
 										</div>
