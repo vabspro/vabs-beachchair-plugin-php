@@ -52,23 +52,27 @@ try {
 
 	if ($method == 'SaveSettings') {
 
-		$settings                     = new Settings();
-		$settings->apiToken           = $_POST['apiToken'] ? : '';
-		$settings->apiClientId        = $_POST['apiClientId'] ? : '';
-		$settings->apiURL             = $_POST['apiURL'] ? : '';
-		$settings->dsgvoLink          = $_POST['dsgvoLink'] ? : '';
-		$settings->agbLink            = $_POST['agbLink'] ? : '';
-		$settings->redirectLink       = $_POST['redirectLink'] ? : '';
-		$settings->textBeforeBooking  = $_POST['textBeforeBooking'] ? : '';
-		$settings->referrerId         = $_POST['referrerId'] ? (int)$_POST['referrerId'] : 0;
-		$settings->payPal             = isset($_POST['payPal']) ? (int)$_POST['payPal'] : 0;
-		$settings->payPalSandbox      = isset($_POST['payPalSandbox']) ? (int)$_POST['payPalSandbox'] : 1;
-		$settings->payPalClientId     = $_POST['payPalClientId'] ? : '';
-		$settings->payPalClientSecret = $_POST['payPalClientSecret'] ? : '';
-		$settings->debug              = $_POST['debug'] == "true" ? 1 : 0;
-		$settings->smtpServer         = $_POST['smtpServer'] ? : '';
-		$settings->smtpUser           = $_POST['smtpUser'] ? : '';
-		$settings->smtpPass           = $_POST['smtpPass'] ? : '';
+		$settings                      = new Settings();
+		$settings->apiToken            = $_POST['apiToken'] ? : '';
+		$settings->apiClientId         = $_POST['apiClientId'] ? : '';
+		$settings->apiURL              = $_POST['apiURL'] ? : '';
+		$settings->dsgvoLink           = $_POST['dsgvoLink'] ? : '';
+		$settings->agbLink             = $_POST['agbLink'] ? : '';
+		$settings->redirectLink        = $_POST['redirectLink'] ? : '';
+		$settings->textBeforeBooking   = $_POST['textBeforeBooking'] ? : '';
+		$settings->referrerId          = $_POST['referrerId'] ? (int)$_POST['referrerId'] : 0;
+		$settings->payPal              = isset($_POST['payPal']) ? (int)$_POST['payPal'] : 0;
+		$settings->payPalSandbox       = isset($_POST['payPalSandbox']) ? (int)$_POST['payPalSandbox'] : 1;
+		$settings->payPalClientId      = $_POST['payPalClientId'] ? : '';
+		$settings->payPalClientSecret  = $_POST['payPalClientSecret'] ? : '';
+		$settings->debug               = $_POST['debug'] == "true" ? 1 : 0;
+		$settings->smtpServer          = $_POST['smtpServer'] ? : '';
+		$settings->smtpUser            = $_POST['smtpUser'] ? : '';
+		$settings->smtpPass            = $_POST['smtpPass'] ? : '';
+		$settings->blockBookingEnabled = $_POST['blockBookingEnabled'] ? : 0;
+		$settings->blockBookingFrom    = $_POST['blockBookingFrom'] ? Date::FormatDateToFormat ($_POST['blockBookingFrom'], Date::DATE_FORMAT_SQL_DATE) : '';
+		$settings->blockBookingTo      = $_POST['blockBookingTo'] ? Date::FormatDateToFormat ($_POST['blockBookingTo'], Date::DATE_FORMAT_SQL_DATE) : '';
+		$settings->blockBookingText    = $_POST['blockBookingText'] ?: '';
 		if (!$settings->Save ()) {
 			throw new Exception("Data could not be saved. Error: ".$settings->errorMessage);
 		}

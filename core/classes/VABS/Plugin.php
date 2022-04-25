@@ -2,6 +2,8 @@
 
 namespace VABS;
 
+use DateTime;
+use DD\Helper\Date;
 use DD\Mailer\Mailer;
 use Exception;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
@@ -43,12 +45,12 @@ class Plugin
 	public function StylesAll () {
 
 		wp_enqueue_style ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css", [], false);
+		wp_enqueue_style ('flatpickr', VABS_PLUGIN_PATH.'/assets/css/flatpickr.css', [], false);
 
 	}
 
 	public function StylesFrontPage () {
 
-		wp_enqueue_style ('flatpickr', VABS_PLUGIN_PATH.'/assets/css/flatpickr.css', [], false);
 		wp_enqueue_style ('public', VABS_PLUGIN_PATH.'/assets/css/public.css', [], false);
 		wp_enqueue_style ('leaflet', VABS_PLUGIN_PATH.'/assets/css/leaflet.css', [], false);
 		wp_enqueue_style ('select2', VABS_PLUGIN_PATH.'/assets/css/select2.css', [], false);
@@ -67,18 +69,17 @@ class Plugin
 
 		wp_enqueue_script ('library', VABS_PLUGIN_PATH.'/assets/js/library.js', $this->jquery, '1.0.0', true);
 		wp_enqueue_script ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", $this->jquery, '1.0.0', true);
-
+		wp_enqueue_script ('flatpickr', VABS_PLUGIN_PATH."/assets/js/flatpickr.js", $this->jquery, '1.0.0', true);
+		wp_enqueue_script ('flatpickr-de', VABS_PLUGIN_PATH."/assets/js/flatpickr-de.js", [
+				$this->jquery,
+				'flatpickr'
+		], '1.0.0', true);
 	}
 
 	public function ScriptsFrontPage () {
 
 		wp_enqueue_script ('loadingOverlay', VABS_PLUGIN_PATH."/assets/js/loadingOverlay.js", $this->jquery, '1.0.0', true);
 		wp_enqueue_script ('leaflet', VABS_PLUGIN_PATH."/assets/js/leaflet.js", $this->jquery, '1.0.0', true);
-		wp_enqueue_script ('flatpickr', VABS_PLUGIN_PATH."/assets/js/flatpickr.js", $this->jquery, '1.0.0', true);
-		wp_enqueue_script ('flatpickr-de', VABS_PLUGIN_PATH."/assets/js/flatpickr-de.js", [
-				$this->jquery,
-				'flatpickr'
-		], '1.0.0', true);
 		wp_enqueue_script ('flatpickr-rangePlugin', VABS_PLUGIN_PATH."/assets/js/flatpickr-rangePlugin.js", [
 				$this->jquery,
 				'flatpickr'
@@ -169,42 +170,81 @@ class Plugin
 
 			?>
 			<h1>Settings</h1>
-			<h5>Version <span class="badge-primary" style="color: red"><?php echo $row->versionNumber; ?></span></h5>
+			<h5>Version <span class="badge-primary" style="color: red"><?php echo Settings::VERSION; ?></span></h5>
 			<form action="" class="form-inline" method="POST">
 
 				<div class="form">
 
 					<h3>API</h3>
 					<div class="form-group row">
+
 						<label for="api_url" class="col-sm-2 col-form-label">API-URL:</label>
 						<div class="col-sm-10">
 							<input type="text" class="border bg-light col-6 form-control" id="apiURL" value="<?php echo $row->apiURL ?? ''; ?>">
 						</div>
+
 					</div>
 					<div class="form-group row">
+
 						<label for="api_token" class="col-sm-2 col-form-label">API TOKEN:</label>
 						<div class="col-sm-4">
 							<input type="text" class="border bg-light form-control" id="apiToken" value="<?php echo $row->apiToken ?? ''; ?>">
 						</div>
+
 						<label for="client_id" class="col-sm-2 col-form-label">API CLIENT ID:</label>
 						<div class="col-sm-4">
 							<input type="text" class="border bg-light form-control" id="apiClientId" value="<?php echo $row->apiClientId ?? ''; ?>">
 						</div>
+
+					</div>
+					<h3>Buchungsformular sperren</h3>
+					<div class="form-group row">
+
+						<div class="col-sm-10">
+							<label for="blockBookingEnabled" class="col-sm-2 col-form-label">Sperren</label>
+							<div class="col-sm-4">
+								<input type="checkbox" class="border bg-light form-control" id="blockBookingEnabled" value="1" <?php echo $row->blockBookingEnabled == 1 ? "checked" : ""; ?>>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="form-group row">
+
+						<label for="blockBookingFrom" class="col-sm-2 col-form-label">Von:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="blockBookingFrom" value="<?php echo $row->blockBookingFrom ? Date::FormatDateToFormat ($row->blockBookingFrom) : ''; ?>">
+						</div>
+
+						<label for="blockBookingTo" class="col-sm-2 col-form-label">Bis:</label>
+						<div class="col-sm-4">
+							<input type="text" class="border bg-light form-control" id="blockBookingTo" value="<?php echo $row->blockBookingTo ? Date::FormatDateToFormat ($row->blockBookingTo) : ''; ?>">
+						</div>
+
+						<label for="blockBookingText" class="col-sm-2 col-form-label">Grund/Text auf der Webseite:</label>
+						<div class="col-sm-10">
+							<textarea type="text" class="border bg-light form-control" id="blockBookingText"><?php echo $row->blockBookingText ?? ''; ?></textarea>
+						</div>
+
 					</div>
 					<h3>PayPal (<?php echo $row->payPalSandbox == 1 ? "TEST" : "PROD"; ?>)</h3>
 					<div class="form-group row">
+
 						<label for="payPal" class="col-sm-2 col-form-label">Einschalten</label>
 						<div class="col-sm-4">
 							<input type="checkbox" class="border bg-light form-control" id="payPal" value="1" <?php echo $row->payPal == 1 ? "checked" : ""; ?>>
 						</div>
+
 						<label for="payPal" class="col-sm-2 col-form-label">Benutze PayPal SANDBOX</label>
 						<div class="col-sm-4">
 							<input type="checkbox" class="border bg-light form-control" id="payPalSandbox" value="1" <?php echo $row->payPalSandbox == 1 ? "checked" : ""; ?>>
 						</div>
+
 						<label for="payPalClientId" class="col-sm-2 col-form-label">PayPal CLIENT ID:</label>
 						<div class="col-sm-4">
 							<input type="text" class="border bg-light form-control" id="payPalClientId" value="<?php echo $row->payPalClientId ?? ''; ?>">
 						</div>
+
 						<label for="payPalClientSecret" class="col-sm-2 col-form-label">PayPal CLIENT SECRET:</label>
 						<div class="col-sm-4">
 							<input type="password" class="border bg-light form-control" id="payPalClientSecret" value="<?php echo $row->payPalClientSecret ?? ''; ?>">
@@ -212,6 +252,7 @@ class Plugin
 					</div>
 					<h3>Links</h3>
 					<div class="form-group row">
+
 						<label for="dsgvo" class="col-sm-2 col-form-label">DSGVO Link:</label>
 						<div class="col-sm-4">
 							<input type="text" class="border bg-light form-control" id="dsgvoLink" value="<?php echo $row->dsgvoLink ?? ''; ?>">
@@ -221,35 +262,44 @@ class Plugin
 						<div class="col-sm-4">
 							<input type="text" class="border bg-light form-control" id="agbLink" value="<?php echo $row->agbLink ?? ''; ?>">
 						</div>
+
 					</div>
 					<div class="form-group row">
+
 						<label for="redirectLink" class="col-sm-2 col-form-label">Erfolgsseite:</label>
 						<div class="col-sm-10">
 							<input type="text" class="border bg-light form-control" id="redirectLink" value="<?php echo $row->redirectLink ?? ''; ?>">
 						</div>
+
 					</div>
 					<h3>Zusatztexte</h3>
 					<div class="form-group row">
+
 						<label for="dsgvo" class="col-sm-2 col-form-label">Text vor Buchung:</label>
 						<div class="col-sm-10">
 							<input type="text" class="border bg-light form-control" id="textBeforeBooking" value="<?php echo $row->textBeforeBooking ?? ''; ?>">
 						</div>
+
 					</div>
 					<h3>Referrer URL (ID)</h3>
 					<input type="hidden" id="settingsReferrerId" value="<?php echo $row->referrerId ? (int)$row->referrerId : 0; ?>">
 					<div class="form-group row">
+
 						<label for="referrerId" class="col-sm-2 col-form-label">Referrer:</label>
 						<div class="col-sm-6">
 							<select class="border bg-light col-3 form-control" id="referrerId"><!-- via AJAX --></select>
 						</div>
+
 					</div>
 
 					<h3>Email Debug</h3>
 					<div class="form-group row">
+
 						<label for="debug" class="col-sm-2 col-form-label">Einschalten</label>
 						<div class="col-sm-10">
 							<input type="checkbox" class="border bg-light form-control" id="debug" value="1" <?php echo $row->debug == 1 ? "checked" : ""; ?>>
 						</div>
+
 						<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
 						<div class="col-sm-10">
 							<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $row->smtpServer ?? ''; ?>">
@@ -273,7 +323,7 @@ class Plugin
 
 					<div class="form-row align-items-left">
 						<div class="col-sm-12 my-2">
-							<button type="button" class="button button-danger" id="btnSave">Save</button>
+							<button type="button" class="button button-danger" id="btnSave">Speichern</button>
 
 							<button type="button" class="button button-primary" id="btnLoadAGBS">Load AGBS-Link from VABS</button>
 
@@ -348,272 +398,292 @@ class Plugin
 
 			if ($attributes['type'] == 'beachchair_booking') {
 
-				$token          = $_GET['token'] ? : '';
-				$PayerID        = $_GET['PayerID'] ? : '';
-				$salesHeaderId  = $_SESSION['salesHeaderId'] ? : 0;
-				$salesInvoiceId = $_SESSION['salesInvoiceId'] ? : 0;
+				$isBlocked = !empty($row->blockBookingEnabled);
+				$today = new DateTime();
+				$from = new DateTime($row->blockBookingFrom." 00:00:00");
+				$to = new DateTime($row->blockBookingTo." 23:59:59");
+				$inRange = $today >= $from && $today <= $to;
 
-				$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+				if($isBlocked && $inRange){
+				?>
+					<div class="alert alert-danger" role="alert" style="font-size: 1.2em !important">
+						<?php
+						echo str_replace ("#bis#", Date::FormatDateToFormat ($row->blockBookingTo), $row->blockBookingText);
+						?>
+					</div>
+				<?php
+				}else{
 
-				$isSandBox = (int)$row->payPalSandbox === 1;
+					$token          = $_GET['token'] ? : '';
+					$PayerID        = $_GET['PayerID'] ? : '';
+					$salesHeaderId  = $_SESSION['salesHeaderId'] ? : 0;
+					$salesInvoiceId = $_SESSION['salesInvoiceId'] ? : 0;
 
-				define ("SMTP_USER", $row->smtpUser);
-				define ("SMTP_PASS", $row->smtpPass);
-				define ("SMTP_SERVER", $row->smtpServer);
+					$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-				if (!empty($token) && !empty($PayerID)) {
+					$isSandBox = (int)$row->payPalSandbox === 1;
 
-					if ($isSandBox) {
-						$environment = new SandboxEnvironment($row->payPalClientId, $row->payPalClientSecret);
-					} else {
-						$environment = new ProductionEnvironment($row->payPalClientId, $row->payPalClientSecret);
-					}
+					define ("SMTP_USER", $row->smtpUser);
+					define ("SMTP_PASS", $row->smtpPass);
+					define ("SMTP_SERVER", $row->smtpServer);
 
-					try {
+					if (!empty($token) && !empty($PayerID)) {
 
-						$client  = new PayPalHttpClient($environment);
-						$request = new OrdersCaptureRequest($token);
-						$request->prefer ('return=representation');
-
-						// Call API with your client and get a response for your call
-						$response = $client->execute ($request);
-
-						$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
-
-						$request  = new OrdersGetRequest($token);
-						$response = $client->execute ($request);
-
-						if($debug) {
-							$var = print_r ($response, true);
-							Email::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+						if ($isSandBox) {
+							$environment = new SandboxEnvironment($row->payPalClientId, $row->payPalClientSecret);
+						} else {
+							$environment = new ProductionEnvironment($row->payPalClientId, $row->payPalClientSecret);
 						}
 
-					} catch (HttpException $e) {
+						try {
 
-						$statusCode = $e->statusCode;
-						if ($statusCode == 422) {
+							$client  = new PayPalHttpClient($environment);
+							$request = new OrdersCaptureRequest($token);
+							$request->prefer ('return=representation');
 
-							try {
+							// Call API with your client and get a response for your call
+							$response = $client->execute ($request);
 
-								if (empty($client)) {
-									$client = new PayPalHttpClient($environment);
+							$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
+
+							$request  = new OrdersGetRequest($token);
+							$response = $client->execute ($request);
+
+							if ($debug) {
+								$var = print_r ($response, true);
+								Email::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+							}
+
+						} catch (HttpException $e) {
+
+							$statusCode = $e->statusCode;
+							if ($statusCode == 422) {
+
+								try {
+
+									if (empty($client)) {
+										$client = new PayPalHttpClient($environment);
+									}
+									$request  = new OrdersGetRequest($token);
+									$response = $client->execute ($request);
+
+									if ($debug) {
+										$var = print_r ($response, true);
+										Email::SendAdminMail ("File: ".__FILE__."<br>Place: Already Captured<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
+									}
+
+									$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
+
+								} catch (Exception $e) {
+
+									echo $e->getMessage ();
+
 								}
-								$request  = new OrdersGetRequest($token);
-								$response = $client->execute ($request);
-
-								if ($debug) {
-									$var = print_r ($response, true);
-									Email::SendAdminMail ("File: ".__FILE__."<br>Place: Already Captured<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
-								}
-
-								$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
-
-							} catch (Exception $e) {
-
-								echo $e->getMessage ();
 
 							}
 
 						}
 
-					}
+						if (!empty($captureId)) {
 
-					if (!empty($captureId)) {
+							$API = new API();
+							$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+							$API->UpdateSalesInvoiceStatus ($salesHeaderId, $salesInvoiceId, 5);
+							$API->SendInvoice ($salesHeaderId);
 
-						$API = new API();
-						$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
-						$API->UpdateSalesInvoiceStatus ($salesHeaderId, $salesInvoiceId, 5);
-						$API->SendInvoice ($salesHeaderId);
+							if ($debug) {
+								Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
+							}
 
-						if ($debug) {
-							Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
+							echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
+						} else {
+							$errorMessage = "Capture ID was empty or couldn't get";
+							Log::Log ($errorMessage);
+							Email::SendAdminMail ("File: ".__FILE__."<br>ErrorMessage: ".$errorMessage, Mailer::EMAIL_SUBJECT_DEBUG);
 						}
 
-						echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
-					} else {
-						$errorMessage = "Capture ID was empty or couldn't get";
-						Log::Log ($errorMessage);
-						Email::SendAdminMail ("File: ".__FILE__."<br>ErrorMessage: ".$errorMessage, Mailer::EMAIL_SUBJECT_DEBUG);
 					}
 
-				}
+					ob_start ();
+					?>
+					<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
+						Das hat geklappt.....
+					</div>
+					<div id="vabs__bookingContainer">
 
-				ob_start ();
-				?>
-				<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
-					Das hat geklappt.....
-				</div>
-				<div id="vabs__bookingContainer">
+						<form id="form" class="row gx-3 gy-2 align-items-center">
 
-					<form id="form" class="row gx-3 gy-2 align-items-center">
-
-						<div class="vabs__container" id="vabs__dateSelectContainer">
-							<h5>Wähle einen oder mehrere Tag(e)</h5>
-							<h3>An- und Abreisetag anklicken!</h3>
-							<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
-							<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
-							<div id="errorMessage">
-								<!-- via booking Script -->
-							</div>
-						</div>
-
-						<div class="vabs__container normal" id="vabs__locationSelectContainerNormal" style="display: none">
-							<h5>Strandabschnitt wählen</h5>
-							<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
-							<div class="locationSelect"><!-- via AJAX --></div>
-						</div>
-
-						<div class="vabs__container hopping" id="vabs__locationSelectContainerHopping" style="display: none">
-							<h5>Strandabschnitt wählen</h5>
-							<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
-							<div class="row g-3">
-								<div class="col-sm-6">
-									<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
-								</div>
-								<div class="col-sm-6">
-									<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
+							<div class="vabs__container" id="vabs__dateSelectContainer">
+								<h5>Wähle einen oder mehrere Tag(e)</h5>
+								<h3>An- und Abreisetag anklicken!</h3>
+								<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
+								<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
+								<div id="errorMessage">
+									<!-- via booking Script -->
 								</div>
 							</div>
-						</div>
 
-						<div class="vabs__container normal" id="vabs__mapsContainer">
+							<div class="vabs__container normal" id="vabs__locationSelectContainerNormal" style="display: none">
+								<h5>Strandabschnitt wählen</h5>
+								<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
+								<div class="locationSelect"><!-- via AJAX --></div>
+							</div>
 
-							<div id="vabs__leafLetMap"></div>
-							<div id="vabs__flexMap">
-
-								<div class="vabs__flexContainer">
-
-									<div class="vabs__flexTopContainer">
-
-										<h2 class="vabs__flexHeadline"><!-- via Ajax --></h2>
-										<button class="vabs__flexBtnBack">X</button>
-
+							<div class="vabs__container hopping" id="vabs__locationSelectContainerHopping" style="display: none">
+								<h5>Strandabschnitt wählen</h5>
+								<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
+								<div class="row g-3">
+									<div class="col-sm-6">
+										<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
 									</div>
-
-									<div class="vabs__flexRowContainer">
-
-										<div class="vabs__flexRows"><!-- via AJAX --></div>
-
+									<div class="col-sm-6">
+										<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
 									</div>
+								</div>
+							</div>
 
-									<div id="vabs__chair-card" style="display:none;">
-										<div class="vabs__chair-container">
-											<button type="button" class="btn btn-secondary vabs__btnChairClose">X</button>
-											<div class="vabs__chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-											<div class="vabs__chair-body">
-												<div>
-													<strong style="display: block;">Strandkorb Nummer: <span id="vabs__chairCardName"></span></strong> <span style="display: block;">Modell: <span id="vabs__chairCardType"></span></span>
+							<div class="vabs__container normal" id="vabs__mapsContainer">
+
+								<div id="vabs__leafLetMap"></div>
+								<div id="vabs__flexMap">
+
+									<div class="vabs__flexContainer">
+
+										<div class="vabs__flexTopContainer">
+
+											<h2 class="vabs__flexHeadline"><!-- via Ajax --></h2>
+											<button class="vabs__flexBtnBack">X</button>
+
+										</div>
+
+										<div class="vabs__flexRowContainer">
+
+											<div class="vabs__flexRows"><!-- via AJAX --></div>
+
+										</div>
+
+										<div id="vabs__chair-card" style="display:none;">
+											<div class="vabs__chair-container">
+												<button type="button" class="btn btn-secondary vabs__btnChairClose">X</button>
+												<div class="vabs__chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
+												<div class="vabs__chair-body">
+													<div>
+														<strong style="display: block;">Strandkorb Nummer: <span id="vabs__chairCardName"></span></strong> <span style="display: block;">Modell: <span id="vabs__chairCardType"></span></span>
+													</div>
+													<button type="button" id="vabs__chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
+													<button type="button" id="vabs__chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
 												</div>
-												<button type="button" id="vabs__chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
-												<button type="button" id="vabs__chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
 											</div>
 										</div>
+
 									</div>
 
 								</div>
-
-							</div>
-						</div>
-
-						<div class="vabs__container" id="vabs__personalDataContainer" style="display: none">
-
-							<h5>Vervollständige die persönlichen Daten</h5>
-
-							<div class="row g-3">
-								<div class="col-sm-3">
-									<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
-								</div>
-								<div class="col-sm-3">
-									<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
-								</div>
-								<div class="col-sm-3">
-									<input name="email" class="border bg-light" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
-								</div>
-								<div class="col-sm-3">
-									<input name="tel" class="border bg-light" type="text" placeholder="Telefonnummer">
-								</div>
-							</div>
-							<div class="row g-3">
-								<div class="col-sm-2">
-									<input name="postCode" class="border bg-light" type="text" placeholder="PLZ" required>
-								</div>
-								<div class="col-sm-4">
-									<input name="city" class="border bg-light" type="text" placeholder="Ort" required>
-								</div>
-								<div class="col-sm-4">
-									<input name="street" class="border bg-light" type="text" placeholder="Strasse" required>
-								</div>
-								<div class="col-sm-2">
-									<input name="number" class="border bg-light" type="text" placeholder="Hausnummer" required>
-								</div>
-							</div>
-							<div class="row g-3">
-								<div class="col-12">
-									<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
-								</div>
 							</div>
 
-						</div>
+							<div class="vabs__container" id="vabs__personalDataContainer" style="display: none">
 
-						<div class="vabs__container" id="vabs__shoppingCartContainerWrapper" style="display: none">
+								<h5>Vervollständige die persönlichen Daten</h5>
 
-							<h5>Zusammenfassung &amp; Buchung</h5>
-
-							<div id="vabs__shoppingCartContainer">
-								<div id="vabs__shoppingCartHeader">
-									<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
-
+								<div class="row g-3">
+									<div class="col-sm-3">
+										<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
+									</div>
+									<div class="col-sm-3">
+										<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
+									</div>
+									<div class="col-sm-3">
+										<input name="email" class="border bg-light" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
+									</div>
+									<div class="col-sm-3">
+										<input name="tel" class="border bg-light" type="text" placeholder="Telefonnummer">
+									</div>
 								</div>
-								<div id="vabs__shoppingCartList">
-									<!-- via AJAX -->
+								<div class="row g-3">
+									<div class="col-sm-2">
+										<input name="postCode" class="border bg-light" type="text" placeholder="PLZ" required>
+									</div>
+									<div class="col-sm-4">
+										<input name="city" class="border bg-light" type="text" placeholder="Ort" required>
+									</div>
+									<div class="col-sm-4">
+										<input name="street" class="border bg-light" type="text" placeholder="Strasse" required>
+									</div>
+									<div class="col-sm-2">
+										<input name="number" class="border bg-light" type="text" placeholder="Hausnummer" required>
+									</div>
 								</div>
-								<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+								<div class="row g-3">
+									<div class="col-12">
+										<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
+									</div>
+								</div>
 
-								<div id="vabs__paymentSection">
-									<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
-									<?php
+							</div>
 
-									if ($row->payPal == 1) {
-										?>
+							<div class="vabs__container" id="vabs__shoppingCartContainerWrapper" style="display: none">
 
-										<div class="form-check form-check-inline">
-											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-										</div>
-										<div class="form-check form-check-inline">
-											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
-										</div>
+								<h5>Zusammenfassung &amp; Buchung</h5>
 
+								<div id="vabs__shoppingCartContainer">
+									<div id="vabs__shoppingCartHeader">
+										<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
+
+									</div>
+									<div id="vabs__shoppingCartList">
+										<!-- via AJAX -->
+									</div>
+									<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+
+									<div id="vabs__paymentSection">
+										<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
 										<?php
-									} else {
-										?>
-										<div class="form-check form-check-inline">
-											<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-										</div>
 
+										if ($row->payPal == 1) {
+											?>
+
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+											</div>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
+											</div>
+
+											<?php
+										} else {
+											?>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+											</div>
+
+											<?php
+										}
+										?>
+									</div>
+									<?php
+									if (!empty($row->textBeforeBooking)) {
+										?>
+										<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($row->textBeforeBooking); ?></div>
 										<?php
 									}
 									?>
+									<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
+									<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
 								</div>
-								<?php
-								if (!empty($row->textBeforeBooking)) {
-									?>
-									<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($row->textBeforeBooking); ?></div>
-									<?php
-								}
-								?>
-								<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
-								<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
+
 							</div>
 
-						</div>
+						</form>
 
-					</form>
+					</div>
 
-				</div>
+					<?php
+					$content = ob_get_contents ();
+					ob_end_clean ();
 
-				<?php
-				$content = ob_get_contents ();
-				ob_end_clean ();
+				}
+
+
 
 			}
 

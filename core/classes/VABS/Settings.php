@@ -10,7 +10,7 @@ use PDOException;
 class Settings
 {
 
-	const VERSION = "2.00";
+	const VERSION = "2.01";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';
@@ -32,6 +32,12 @@ class Settings
 	public string $smtpServer  = '';
 	public string $smtpUser  = '';
 	public string $smtpPass  = '';
+
+	//Block Booking
+	public int $blockBookingEnabled = 0;
+	public string $blockBookingFrom = '';
+	public string $blockBookingTo   = '';
+	public string $blockBookingText   = '';
 
 	public int $debug  = 0;
 	/**
@@ -76,7 +82,11 @@ class Settings
 						IFNULL(smtpUser,'') as smtpUser,
 						IFNULL(smtpPass,'') as smtpPass,
 						IFNULL(debug,0) as debug,
-						IFNULL(versionNumber,'') as versionNumber
+						IFNULL(versionNumber,'') as versionNumber,
+						IFNULL(blockBookingEnabled,0) as blockBookingEnabled,
+						IFNULL(blockBookingFrom,'') as blockBookingFrom,
+						IFNULL(blockBookingTo,'') as blockBookingTo,
+						IFNULL(blockBookingText,'') as blockBookingText
 					FROM
 						vabs_settings";
 			$stm = $conPDO->prepare ($SQL);
@@ -136,7 +146,11 @@ class Settings
 						smtpServer = :smtpServer,
 						smtpUser = :smtpUser,
 						smtpPass = :smtpPass,
-						debug = :debug";
+						debug = :debug,
+						blockBookingEnabled = :blockBookingEnabled,
+						blockBookingFrom = :blockBookingFrom,
+						blockBookingTo = :blockBookingTo,
+						blockBookingText = :blockBookingText";
 			$stm = $conPDO->prepare ($SQL);
 			$stm->bindValue (':apiToken', $this->apiToken);
 			$stm->bindValue (':apiClientId', $this->apiClientId);
@@ -154,6 +168,10 @@ class Settings
 			$stm->bindValue (':smtpUser', $this->smtpUser);
 			$stm->bindValue (':smtpPass', $this->smtpPass);
 			$stm->bindValue (':debug', $this->debug, PDO::PARAM_INT);
+			$stm->bindValue (':blockBookingEnabled', $this->blockBookingEnabled, PDO::PARAM_INT);
+			$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
+			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
+			$stm->bindValue (':blockBookingText', $this->blockBookingText);
 
 			$stm->execute ();
 
@@ -198,7 +216,14 @@ class Settings
 							`smtpServer` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`smtpUser` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`smtpPass` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci'
+							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`debug` TINYINT(1) NULL DEFAULT 0,
+							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+							`blockBookingFrom` DATE NULL,
+							`blockBookingTo` DATE NULL,
+							`blockBookingText` TEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci'
 						) COLLATE='utf8_general_ci' ENGINE=InnoDB;";
 				$stm = $conPDO->prepare ($SQL);
 				$stm->execute ();
@@ -222,7 +247,11 @@ class Settings
 							smtpUser = :smtpUser,
 							smtpPass = :smtpPass,
 							versionNumber = :versionNumber,
-							debug = :debug";
+							debug = :debug,
+							blockBookingEnabled = 0,
+							blockBookingFrom = '',
+							blockBookingTo = '',
+							blockBookingText = ''";
 
 				if(file_exists ($this->path)){
 					include $this->path;
@@ -245,7 +274,7 @@ class Settings
 						$stm->bindValue (':smtpServer', $settings['smtpServer']);
 						$stm->bindValue (':smtpUser', $settings['smtpUser']);
 						$stm->bindValue (':smtpPass', $settings['smtpPass']);
-						$stm->bindValue (':versionNumber', '1.03');
+						$stm->bindValue (':versionNumber', self::VERSION);
 						$stm->bindValue (':debug', $settings['debug'], 1);
 					}
 				}else{
@@ -265,11 +294,26 @@ class Settings
 					$stm->bindValue (':smtpServer', '');
 					$stm->bindValue (':smtpUser', '');
 					$stm->bindValue (':smtpPass', '');
-					$stm->bindValue (':versionNumber', '1.03');
+					$stm->bindValue (':versionNumber', self::VERSION);
 					$stm->bindValue (':debug', '', 1);
 				}
 
 				$stm->execute ();
+
+			}else{
+
+				//Check if new fields are in the database
+				$SQL = "ALTER TABLE `vabs_settings`
+							ADD COLUMN `blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' AFTER `versionNumber`,
+							ADD COLUMN `blockBookingFrom` DATE NULL AFTER `blockBookingEnabled`,
+							ADD COLUMN `blockBookingTo` DATE NULL AFTER `blockBookingFrom`,
+							ADD COLUMN `blockBookingText` TEXT NULL AFTER `blockBookingTo`;";
+				$stm = $conPDO->prepare ($SQL);
+				try {
+					$stm->execute ();
+				}catch(Exception $e){
+					//Do NOTHING as the columns might already be exist
+				}
 
 			}
 

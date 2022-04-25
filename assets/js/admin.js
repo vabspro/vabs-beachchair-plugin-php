@@ -45,12 +45,13 @@ jQuery(document).ready(function ($) {
         let smtpServer = $('#smtpServer').val();
         let smtpUser = $('#smtpUser').val();
         let smtpPass = $('#smtpPass').val();
+
         let debug = $('#debug').prop('checked');
 
-        console.log({payPal});
-        console.log({payPalSandbox});
-        console.log({payPalClientId});
-        console.log({payPalClientSecret});
+        let blockBookingEnabled = $('#blockBookingEnabled').prop('checked');
+        let blockBookingFrom = $('#blockBookingFrom').val();
+        let blockBookingTo = $('#blockBookingTo').val();
+        let blockBookingText = $('#blockBookingText').val();
 
         if(payPal){
             if(payPalClientId.length == 0){
@@ -93,6 +94,11 @@ jQuery(document).ready(function ($) {
                     smtpUser: smtpUser,
                     smtpPass: smtpPass,
                     debug: debug,
+                    blockBookingEnabled: blockBookingEnabled ? 1: 0,
+                    blockBookingFrom: blockBookingFrom,
+                    blockBookingTo: blockBookingTo,
+                    blockBookingText: blockBookingText
+
 
                 },
 
@@ -109,6 +115,7 @@ jQuery(document).ready(function ($) {
 
                         ShowErrorMessage("Erfolg", 'Das hat geklappt. Die Einstellungen wurden gespeichert');
                         $('#settingsReferrerId').val(referrerId);
+                        setTimeout(HideErrorMessage, 5000);
                         //LoadReferrerSelection();
 
                     } else {
@@ -410,5 +417,10 @@ jQuery(document).ready(function ($) {
         }
 
     }
+
+    let fp = flatpickr('#blockBookingFrom,#blockBookingTo', {
+        dateFormat: 'd.m.Y',
+        locale: 'de',
+    });
 
 });
