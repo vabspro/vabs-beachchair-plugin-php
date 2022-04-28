@@ -398,6 +398,7 @@ class Plugin
 
 			if ($attributes['type'] == 'beachchair_booking') {
 
+
 				$isBlocked = !empty($row->blockBookingEnabled);
 				$today = new DateTime();
 				$from = new DateTime($row->blockBookingFrom." 00:00:00");
@@ -405,27 +406,37 @@ class Plugin
 				$inRange = $today >= $from && $today <= $to;
 
 				if($isBlocked && $inRange){
-				?>
-					<div class="alert alert-danger" role="alert" style="font-size: 1.2em !important">
-						<?php
-						echo str_replace ("#bis#", Date::FormatDateToFormat ($row->blockBookingTo), $row->blockBookingText);
-						?>
+					ob_start ();
+					?>
+					<div class="wp-block-columns">
+						<div class="wp-block-column">
+							<div class="alert alert-danger" role="alert" style="font-size: 1.2em !important">
+								<?php
+								echo str_replace ("#bis#", Date::FormatDateToFormat ($row->blockBookingTo), $row->blockBookingText);
+								?>
+							</div>
+						</div>
 					</div>
-				<?php
+					<?php
+					$content = ob_get_contents ();
+					ob_end_clean ();
+
 				}else{
 
-					$token          = $_GET['token'] ? : '';
-					$PayerID        = $_GET['PayerID'] ? : '';
-					$salesHeaderId  = $_SESSION['salesHeaderId'] ? : 0;
-					$salesInvoiceId = $_SESSION['salesInvoiceId'] ? : 0;
+					$token          = $_GET['token'] ?? '';
+					$PayerID        = $_GET['PayerID'] ?? '';
+					$salesHeaderId  = $_SESSION['salesHeaderId'] ?? 0;
+					$salesInvoiceId = $_SESSION['salesInvoiceId'] ?? 0;
 
 					$_SESSION['payPalSuccessRedirectLink'] = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
 					$isSandBox = (int)$row->payPalSandbox === 1;
 
-					define ("SMTP_USER", $row->smtpUser);
-					define ("SMTP_PASS", $row->smtpPass);
-					define ("SMTP_SERVER", $row->smtpServer);
+					if(!defined ("SMTP_USER")) {
+						define ("SMTP_USER", $row->smtpUser);
+						define ("SMTP_PASS", $row->smtpPass);
+						define ("SMTP_SERVER", $row->smtpServer);
+					}
 
 					if (!empty($token) && !empty($PayerID)) {
 
@@ -506,184 +517,186 @@ class Plugin
 
 					ob_start ();
 					?>
-					<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
-						Das hat geklappt.....
-					</div>
-					<div id="vabs__bookingContainer">
-
-						<form id="form" class="row gx-3 gy-2 align-items-center">
-
-							<div class="vabs__container" id="vabs__dateSelectContainer">
-								<h5>Wähle einen oder mehrere Tag(e)</h5>
-								<h3>An- und Abreisetag anklicken!</h3>
-								<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
-								<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
-								<div id="errorMessage">
-									<!-- via booking Script -->
+						<div class="wp-block-columns">
+							<div class="wp-block-column">
+								<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
+									Das hat geklappt.....
 								</div>
-							</div>
+								<div id="vabs__bookingContainer">
 
-							<div class="vabs__container normal" id="vabs__locationSelectContainerNormal" style="display: none">
-								<h5>Strandabschnitt wählen</h5>
-								<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
-								<div class="locationSelect"><!-- via AJAX --></div>
-							</div>
+									<form id="form" class="row gx-3 gy-2 align-items-center">
 
-							<div class="vabs__container hopping" id="vabs__locationSelectContainerHopping" style="display: none">
-								<h5>Strandabschnitt wählen</h5>
-								<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
-								<div class="row g-3">
-									<div class="col-sm-6">
-										<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
-									</div>
-									<div class="col-sm-6">
-										<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
-									</div>
-								</div>
-							</div>
-
-							<div class="vabs__container normal" id="vabs__mapsContainer">
-
-								<div id="vabs__leafLetMap"></div>
-								<div id="vabs__flexMap">
-
-									<div class="vabs__flexContainer">
-
-										<div class="vabs__flexTopContainer">
-
-											<h2 class="vabs__flexHeadline"><!-- via Ajax --></h2>
-											<button class="vabs__flexBtnBack">X</button>
-
+										<div class="vabs__container" id="vabs__dateSelectContainer">
+											<h5>Wähle einen oder mehrere Tag(e)</h5>
+											<h3>An- und Abreisetag anklicken!</h3>
+											<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
+											<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
+											<div id="errorMessage">
+												<!-- via booking Script -->
+											</div>
 										</div>
 
-										<div class="vabs__flexRowContainer">
-
-											<div class="vabs__flexRows"><!-- via AJAX --></div>
-
+										<div class="vabs__container normal" id="vabs__locationSelectContainerNormal" style="display: none">
+											<h5>Strandabschnitt wählen</h5>
+											<p class="hint">Wählen Sie hier im Auswahlfeld einen Strandabschnitt oder klicken Sie einen in der Karte an!</p>
+											<div class="locationSelect"><!-- via AJAX --></div>
 										</div>
 
-										<div id="vabs__chair-card" style="display:none;">
-											<div class="vabs__chair-container">
-												<button type="button" class="btn btn-secondary vabs__btnChairClose">X</button>
-												<div class="vabs__chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-												<div class="vabs__chair-body">
-													<div>
-														<strong style="display: block;">Strandkorb Nummer: <span id="vabs__chairCardName"></span></strong> <span style="display: block;">Modell: <span id="vabs__chairCardType"></span></span>
-													</div>
-													<button type="button" id="vabs__chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
-													<button type="button" id="vabs__chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
+										<div class="vabs__container hopping" id="vabs__locationSelectContainerHopping" style="display: none">
+											<h5>Strandabschnitt wählen</h5>
+											<p class="hint">Wählen Sie hier im Auswahlfeld einen oder mehrere Strandabschnitte/Korbtypen, falls Sie nur bestimmte Abschnitte/Korbtypen buchen möchten. <b>Bitte bedenken Sie aber, dass es dann eventuell keinen Korb mehr über dem gesamten Zeitraum geben kann.</b></p>
+											<div class="row g-3">
+												<div class="col-sm-6">
+													<div id="hoppingBeachLocationsSelectContainer"><!-- via AJAX --></div>
+												</div>
+												<div class="col-sm-6">
+													<div id="hoppingBeachChairTypeSelectContainer"><!-- via AJAX --></div>
 												</div>
 											</div>
 										</div>
 
-									</div>
+										<div class="vabs__container normal" id="vabs__mapsContainer">
+
+											<div id="vabs__leafLetMap"></div>
+											<div id="vabs__flexMap">
+
+												<div class="vabs__flexContainer">
+
+													<div class="vabs__flexTopContainer">
+
+														<h2 class="vabs__flexHeadline"><!-- via Ajax --></h2>
+														<button class="vabs__flexBtnBack">X</button>
+
+													</div>
+
+													<div class="vabs__flexRowContainer">
+
+														<div class="vabs__flexRows"><!-- via AJAX --></div>
+
+													</div>
+
+													<div id="vabs__chair-card" style="display:none;">
+														<div class="vabs__chair-container">
+															<button type="button" class="btn btn-secondary vabs__btnChairClose">X</button>
+															<div class="vabs__chair-header" style="background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
+															<div class="vabs__chair-body">
+																<div>
+																	<strong style="display: block;">Strandkorb Nummer: <span id="vabs__chairCardName"></span></strong> <span style="display: block;">Modell: <span id="vabs__chairCardType"></span></span>
+																</div>
+																<button type="button" id="vabs__chairCardBtnAddToShoppingCart" class="btn btn-success" data-id="">Zur Buchung hinzufügen</button>
+																<button type="button" id="vabs__chairCardBtnRemoveFromShoppingCart" class="btn btn-primary" data-id="">Aus Buchung entfernen</button>
+															</div>
+														</div>
+													</div>
+
+												</div>
+
+											</div>
+										</div>
+
+										<div class="vabs__container" id="vabs__personalDataContainer" style="display: none">
+
+											<h5>Vervollständige die persönlichen Daten</h5>
+
+											<div class="row g-3">
+												<div class="col-sm-3">
+													<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
+												</div>
+												<div class="col-sm-3">
+													<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
+												</div>
+												<div class="col-sm-3">
+													<input name="email" class="border bg-light" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
+												</div>
+												<div class="col-sm-3">
+													<input name="tel" class="border bg-light" type="text" placeholder="Telefonnummer">
+												</div>
+											</div>
+											<div class="row g-3">
+												<div class="col-sm-2">
+													<input name="postCode" class="border bg-light" type="text" placeholder="PLZ" required>
+												</div>
+												<div class="col-sm-4">
+													<input name="city" class="border bg-light" type="text" placeholder="Ort" required>
+												</div>
+												<div class="col-sm-4">
+													<input name="street" class="border bg-light" type="text" placeholder="Strasse" required>
+												</div>
+												<div class="col-sm-2">
+													<input name="number" class="border bg-light" type="text" placeholder="Hausnummer" required>
+												</div>
+											</div>
+											<div class="row g-3">
+												<div class="col-12">
+													<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
+												</div>
+											</div>
+
+										</div>
+
+										<div class="vabs__container" id="vabs__shoppingCartContainerWrapper" style="display: none">
+
+											<h5>Zusammenfassung &amp; Buchung</h5>
+
+											<div id="vabs__shoppingCartContainer">
+												<div id="vabs__shoppingCartHeader">
+													<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
+
+												</div>
+												<div id="vabs__shoppingCartList">
+													<!-- via AJAX -->
+												</div>
+												<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+
+												<div id="vabs__paymentSection">
+													<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
+													<?php
+
+													if ($row->payPal == 1) {
+														?>
+
+														<div class="form-check form-check-inline">
+															<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+														</div>
+														<div class="form-check form-check-inline">
+															<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
+														</div>
+
+														<?php
+													} else {
+														?>
+														<div class="form-check form-check-inline">
+															<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
+														</div>
+
+														<?php
+													}
+													?>
+												</div>
+												<?php
+												if (!empty($row->textBeforeBooking)) {
+													?>
+													<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($row->textBeforeBooking); ?></div>
+													<?php
+												}
+												?>
+												<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
+												<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
+											</div>
+
+										</div>
+
+									</form>
 
 								</div>
 							</div>
-
-							<div class="vabs__container" id="vabs__personalDataContainer" style="display: none">
-
-								<h5>Vervollständige die persönlichen Daten</h5>
-
-								<div class="row g-3">
-									<div class="col-sm-3">
-										<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
-									</div>
-									<div class="col-sm-3">
-										<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
-									</div>
-									<div class="col-sm-3">
-										<input name="email" class="border bg-light" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
-									</div>
-									<div class="col-sm-3">
-										<input name="tel" class="border bg-light" type="text" placeholder="Telefonnummer">
-									</div>
-								</div>
-								<div class="row g-3">
-									<div class="col-sm-2">
-										<input name="postCode" class="border bg-light" type="text" placeholder="PLZ" required>
-									</div>
-									<div class="col-sm-4">
-										<input name="city" class="border bg-light" type="text" placeholder="Ort" required>
-									</div>
-									<div class="col-sm-4">
-										<input name="street" class="border bg-light" type="text" placeholder="Strasse" required>
-									</div>
-									<div class="col-sm-2">
-										<input name="number" class="border bg-light" type="text" placeholder="Hausnummer" required>
-									</div>
-								</div>
-								<div class="row g-3">
-									<div class="col-12">
-										<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
-									</div>
-								</div>
-
-							</div>
-
-							<div class="vabs__container" id="vabs__shoppingCartContainerWrapper" style="display: none">
-
-								<h5>Zusammenfassung &amp; Buchung</h5>
-
-								<div id="vabs__shoppingCartContainer">
-									<div id="vabs__shoppingCartHeader">
-										<strong>Zeitraum: <span id="shoppingCartDateTimeRange"></span></strong>
-
-									</div>
-									<div id="vabs__shoppingCartList">
-										<!-- via AJAX -->
-									</div>
-									<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
-
-									<div id="vabs__paymentSection">
-										<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
-										<?php
-
-										if ($row->payPal == 1) {
-											?>
-
-											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-											</div>
-											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioPayPal" value="2"> <label class="form-check-label" for="radioPayPal">PayPal</label>
-											</div>
-
-											<?php
-										} else {
-											?>
-											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" name="paymentMethodId" id="radioInvoice" value="1"> <label class="form-check-label" for="radioInvoice">Rechnung</label>
-											</div>
-
-											<?php
-										}
-										?>
-									</div>
-									<?php
-									if (!empty($row->textBeforeBooking)) {
-										?>
-										<div class="alert alert-warning" style="margin-top: 15px;"><strong>Bitte beachten Sie: </strong> <?php echo strip_tags ($row->textBeforeBooking); ?></div>
-										<?php
-									}
-									?>
-									<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
-									<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
-								</div>
-
-							</div>
-
-						</form>
-
-					</div>
+						</div>
 
 					<?php
 					$content = ob_get_contents ();
 					ob_end_clean ();
 
 				}
-
-
 
 			}
 

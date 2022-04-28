@@ -43,6 +43,11 @@ From the VABS administration page Account->API
 From your PayPal developer page
 
 == Changelog ==
+= 2.0 =
+* add possibility to block the booking form for a special date range (e.g. vacation)
+* save settings in a database table instead of a file
+* use integer numbers as version numbers
+
 = 0.3 =
 * add vacancy search on the beach chair booking form in case no booking is available for only one chair. (beach chair hopping)
 

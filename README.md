@@ -58,6 +58,11 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
+### 2.01 ###
+
+* add possibility to block the booking form for a special date range (e.g. vacation)
+* save settings in a database table instead of a file
+
 ### 2.0 ###
 
 * send invoice even though PayMent via PayPal has not been finished. 
