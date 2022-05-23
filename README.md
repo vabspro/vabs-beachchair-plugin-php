@@ -58,6 +58,10 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
+### 2.02 ###
+
+* add possibility to define the minimum start day in the calendar based on the current date +x days  
+
 ### 2.01 ###
 
 * add possibility to block the booking form for a special date range (e.g. vacation)

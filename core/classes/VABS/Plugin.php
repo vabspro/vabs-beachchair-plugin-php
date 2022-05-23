@@ -74,6 +74,7 @@ class Plugin
 				$this->jquery,
 				'flatpickr'
 		], '1.0.0', true);
+		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.min.js', $this->jquery, '1.0.0', true);
 	}
 
 	public function ScriptsFrontPage () {
@@ -197,6 +198,7 @@ class Plugin
 						</div>
 
 					</div>
+
 					<h3>Buchungsformular sperren</h3>
 					<div class="form-group row">
 
@@ -223,10 +225,21 @@ class Plugin
 
 						<label for="blockBookingText" class="col-sm-2 col-form-label">Grund/Text auf der Webseite:</label>
 						<div class="col-sm-10">
-							<textarea type="text" class="border bg-light form-control" id="blockBookingText"><?php echo $row->blockBookingText ?? ''; ?></textarea>
+							<textarea class="border bg-light form-control" id="blockBookingText"><?php echo $row->blockBookingText ?? ''; ?></textarea>
 						</div>
 
 					</div>
+
+					<h3>Kalender Startdatum</h3>
+					<div class="form-group row">
+
+						<label for="additionalCalendarStartDays" class="col-sm-2 col-form-label">Anzahl +Tage:</label>
+						<div class="col-sm-2">
+							<input type="number" class="border bg-light form-control" id="additionalCalendarStartDays" value="<?php echo $row->additionalCalendarStartDays ?? 0; ?>">
+						</div>
+
+					</div>
+
 					<h3>PayPal (<?php echo $row->payPalSandbox == 1 ? "TEST" : "PROD"; ?>)</h3>
 					<div class="form-group row">
 
@@ -528,6 +541,8 @@ class Plugin
 
 										<div class="vabs__container" id="vabs__dateSelectContainer">
 											<h5>Wähle einen oder mehrere Tag(e)</h5>
+											<h5 style="color: #C00; display: none;" id="additionalCalendarStartDaysHint">Die Online Buchung ist erst ab <span id="additionalCalendarStartDate"></span> möglich.<br> Sie können aber am Strand selbst noch Ihren Korb buchen, sofern einer verfügbar ist.</h5>
+
 											<h3>An- und Abreisetag anklicken!</h3>
 											<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
 											<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
@@ -646,7 +661,7 @@ class Plugin
 												<div id="vabs__shoppingCartList">
 													<!-- via AJAX -->
 												</div>
-												<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0px 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
+												<input type="checkbox" required name="confirm" value="1" />Hiermit bestätige ich die<a href="<?php echo $row->agbLink; ?>" target="blank" style="margin: 0 4px; text-decoration: underline;">AGB</a>und<a href="<?php echo $row->dsgvoLink; ?>" target="blank" style="margin: 0 4px; text-decoration: underline;">Datenschutzvereinbarung</a> gelesen und verstanden zu haben und stimme diesen zu.<br>
 
 												<div id="vabs__paymentSection">
 													<div class="form-check-inline no-padding-left">Ich bezahle via:</div>
@@ -704,7 +719,6 @@ class Plugin
 
 			$message = $e->getMessage ();
 			Email::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: ".$message, Mailer::EMAIL_SUBJECT_EXCEPTION);
-			$message = SYSTEMTYPE != PROD ? $message : "(Noch) Unbekannter Fehler. Der Programmierer wurde informiert";
 			ob_start ();
 			?>
 			<div class="alert alert-error" role="alert">

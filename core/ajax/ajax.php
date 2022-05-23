@@ -73,6 +73,7 @@ try {
 		$settings->blockBookingFrom    = $_POST['blockBookingFrom'] ? Date::FormatDateToFormat ($_POST['blockBookingFrom'], Date::DATE_FORMAT_SQL_DATE) : '';
 		$settings->blockBookingTo      = $_POST['blockBookingTo'] ? Date::FormatDateToFormat ($_POST['blockBookingTo'], Date::DATE_FORMAT_SQL_DATE) : '';
 		$settings->blockBookingText    = $_POST['blockBookingText'] ?: '';
+		$settings->additionalCalendarStartDays    = $_POST['additionalCalendarStartDays'] ?: 0;
 		if (!$settings->Save ()) {
 			throw new Exception("Data could not be saved. Error: ".$settings->errorMessage);
 		}
@@ -190,6 +191,35 @@ try {
 
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
+
+	}
+
+	if ($method == "LoadAdditionalStartDaysValue") {
+
+		$value    = 0;
+		$settings = new Settings();
+		$responseArray['data'] = 0;
+		$responseArray['error'] = 'Meiner, da hast Du Kacke gebaut!';
+
+		try {
+
+			if(!$settings->Load ()){
+				throw new ValidationException("Fehler beim Laden der Einstellungen");
+			}
+
+			$settings->row;
+			if ($settings->row instanceof Settings) {
+				$value = $settings->row->additionalCalendarStartDays;
+				$responseArray['data'] = $value;
+			} else {
+				throw new ValidationException("row wasn't instance of Settings");
+			}
+
+		} catch(ValidationException $e) {
+			$responseArray['error'] = $e->getMessage ();
+		} catch(Exception $e) {
+			$responseArray['error'] = $e->getMessage ();
+		}
 
 	}
 

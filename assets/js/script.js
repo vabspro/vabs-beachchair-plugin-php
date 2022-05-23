@@ -22,6 +22,8 @@ jQuery(document).ready(function ($) {
 
     let currentMode = '';
 
+    let additionalStartDays = 0;
+
     //declare nodes
 
     let dateFrom = $(".dateFrom");
@@ -104,27 +106,68 @@ jQuery(document).ready(function ($) {
      * INIT *
      ********/
 
+    let addDays = 0;
+
     let Init = function () {
 
-        let fp = flatpickr('.dateFrom', {
-            dateFormat: 'd.m.Y',
-            locale: 'de',
-            mode: "range",
-            onChange: function (dates) {
-                if (dates.length === 2) {
-                    HandleDateChange(dates); //dates will be an object date
-                }
-            },
-        });
+        $.ajax({
 
-        node.on('change', '.locationId', HandleLocationChange);
-        node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
-        node.on('click', '.flexChair', HandleMapChairClick);
-        node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
-        node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-        node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-        node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
-        node.on('click', '#btnLogShoppingCart', LogShoppingCart);
+            url: directory + "/ajax.php",
+
+            type: "POST",
+
+            data: {
+                method: 'LoadAdditionalStartDaysValue',
+            },
+
+            dataType: "json"
+
+        }).done(function () {
+
+            //HideLoadingOverlay();
+
+        }).then(function (response) {
+
+            let error = response.error;
+            if (error != "") {
+
+
+            }
+            addDays = response.data;
+
+            const date = new Date(Date.now() + (addDays * 3600 * 1000 * 24));
+
+            if (addDays > 0) {
+                $('#additionalCalendarStartDaysHint').show();
+                $('#additionalCalendarStartDate').text(moment(date).format('DD.MM.YYYY'));
+            }
+
+            let fp = flatpickr('.dateFrom', {
+                minDate: date,
+                dateFormat: 'd.m.Y',
+                locale: 'de',
+                mode: "range",
+                onChange: function (dates) {
+                    if (dates.length === 2) {
+                        HandleDateChange(dates); //dates will be an object date
+                    }
+                },
+            });
+
+            node.on('change', '.locationId', HandleLocationChange);
+            node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
+            node.on('click', '.flexChair', HandleMapChairClick);
+            node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
+            node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+            node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+            node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
+            node.on('click', '#btnLogShoppingCart', LogShoppingCart);
+
+        }).fail(function (error) {
+
+            ShowErrorMessage("Fehler", error);
+
+        });
 
         btnRefresh.click(function () {
 

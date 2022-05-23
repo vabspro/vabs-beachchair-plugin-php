@@ -39,6 +39,9 @@ class Settings
 	public string $blockBookingTo   = '';
 	public string $blockBookingText   = '';
 
+	//Calendar start date
+	public int $additionalCalendarStartDays  = 0;
+
 	public int $debug  = 0;
 	/**
 	 * @var mixed
@@ -86,7 +89,8 @@ class Settings
 						IFNULL(blockBookingEnabled,0) as blockBookingEnabled,
 						IFNULL(blockBookingFrom,'') as blockBookingFrom,
 						IFNULL(blockBookingTo,'') as blockBookingTo,
-						IFNULL(blockBookingText,'') as blockBookingText
+						IFNULL(blockBookingText,'') as blockBookingText,
+						IFNULL(additionalCalendarStartDays,'') as additionalCalendarStartDays
 					FROM
 						vabs_settings";
 			$stm = $conPDO->prepare ($SQL);
@@ -150,7 +154,8 @@ class Settings
 						blockBookingEnabled = :blockBookingEnabled,
 						blockBookingFrom = :blockBookingFrom,
 						blockBookingTo = :blockBookingTo,
-						blockBookingText = :blockBookingText";
+						blockBookingText = :blockBookingText,
+						additionalCalendarStartDays = :additionalCalendarStartDays";
 			$stm = $conPDO->prepare ($SQL);
 			$stm->bindValue (':apiToken', $this->apiToken);
 			$stm->bindValue (':apiClientId', $this->apiClientId);
@@ -172,6 +177,7 @@ class Settings
 			$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
 			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
 			$stm->bindValue (':blockBookingText', $this->blockBookingText);
+			$stm->bindValue (':additionalCalendarStartDays', $this->additionalCalendarStartDays);
 
 			$stm->execute ();
 
@@ -220,7 +226,8 @@ class Settings
 							`blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 							`blockBookingFrom` DATE NULL,
 							`blockBookingTo` DATE NULL,
-							`blockBookingText` TEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci'
+							`blockBookingText` TEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`additionalCalendarStartDays` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0'
 						) COLLATE='utf8_general_ci' ENGINE=InnoDB;";
 				$stm = $conPDO->prepare ($SQL);
 				$stm->execute ();
@@ -248,7 +255,8 @@ class Settings
 							blockBookingEnabled = 0,
 							blockBookingFrom = '',
 							blockBookingTo = '',
-							blockBookingText = ''";
+							blockBookingText = '',
+							additionalCalendarStartDays = 0";
 
 				if(file_exists ($this->path)){
 					include $this->path;
@@ -273,6 +281,7 @@ class Settings
 						$stm->bindValue (':smtpPass', $settings['smtpPass']);
 						$stm->bindValue (':versionNumber', self::VERSION);
 						$stm->bindValue (':debug', $settings['debug'], 1);
+						$stm->bindValue (':additionalCalendarStartDays', $settings['additionalCalendarStartDays'], PDO::PARAM_INT);
 					}
 				}else{
 					$stm = $conPDO->prepare ($SQL);
@@ -292,7 +301,7 @@ class Settings
 					$stm->bindValue (':smtpUser', '');
 					$stm->bindValue (':smtpPass', '');
 					$stm->bindValue (':versionNumber', self::VERSION);
-					$stm->bindValue (':debug', '', 1);
+					$stm->bindValue (':additionalCalendarStartDays', 0, PDO::PARAM_INT);
 				}
 
 				$stm->execute ();
@@ -301,10 +310,7 @@ class Settings
 
 				//Check if new fields are in the database
 				$SQL = "ALTER TABLE `vabs_settings`
-							ADD COLUMN `blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' AFTER `versionNumber`,
-							ADD COLUMN `blockBookingFrom` DATE NULL AFTER `blockBookingEnabled`,
-							ADD COLUMN `blockBookingTo` DATE NULL AFTER `blockBookingFrom`,
-							ADD COLUMN `blockBookingText` TEXT NULL AFTER `blockBookingTo`;";
+							ADD COLUMN `additionalCalendarStartDays` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' AFTER `blockBookingText`;";
 				$stm = $conPDO->prepare ($SQL);
 				try {
 					$stm->execute ();

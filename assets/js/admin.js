@@ -53,6 +53,8 @@ jQuery(document).ready(function ($) {
         let blockBookingTo = $('#blockBookingTo').val();
         let blockBookingText = $('#blockBookingText').val();
 
+        let additionalCalendarStartDays = $('#additionalCalendarStartDays').val();
+
         if(payPal){
             if(payPalClientId.length == 0){
                 ShowErrorMessage("Fehler", 'Sie haben PayPal ausgewählt aber keine CLIENT ID eingegeben. Diese erhalten Sie in Ihrer PaylPal Entwicklerkonsole');
@@ -94,10 +96,11 @@ jQuery(document).ready(function ($) {
                     smtpUser: smtpUser,
                     smtpPass: smtpPass,
                     debug: debug,
-                    blockBookingEnabled: blockBookingEnabled ? 1: 0,
+                    blockBookingEnabled: blockBookingEnabled ? 1 : 0,
                     blockBookingFrom: blockBookingFrom,
                     blockBookingTo: blockBookingTo,
-                    blockBookingText: blockBookingText
+                    blockBookingText: blockBookingText,
+                    additionalCalendarStartDays: additionalCalendarStartDays,
 
 
                 },
