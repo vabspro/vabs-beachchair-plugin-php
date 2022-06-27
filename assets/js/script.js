@@ -138,8 +138,12 @@ jQuery(document).ready(function ($) {
             const date = new Date(Date.now() + (addDays * 3600 * 1000 * 24));
 
             if (addDays > 0) {
+
+                let dateText = moment(date).format('DD.MM.YYYY');
+
                 $('#additionalCalendarStartDaysHint').show();
-                $('#additionalCalendarStartDate').text(moment(date).format('DD.MM.YYYY'));
+                $('#additionalCalendarStartDate').text(dateText);
+                $('#additionalCalendarStartDate2').text(dateText);
             }
 
             let fp = flatpickr('.dateFrom', {
@@ -1028,10 +1032,14 @@ jQuery(document).ready(function ($) {
 
     let ValidateAndSendOrder = function () {
 
-        ShowLoadingOverlay();
+        HideErrorMessage();
 
-        let button = $(this);
+        $("#vabs__btnOrderNow").hide();
+
+        let button = $("#vabs__btnOrderNow");
         button.hide();
+
+        ShowLoadingOverlay('Bitte haben Sie einen Moment Geduld. Dies kann einen Moment dauern.');
 
         let formData = $('#form').serializeArray();
         let data = {};
@@ -1199,11 +1207,24 @@ jQuery(document).ready(function ($) {
 
     let ShowLoadingOverlay = function (message = '') {
 
+        var customElement = $("<div>", {
+            "css": {
+                //"border": "4px dashed gold",
+                "font-size": "40px",
+                "text-align": "center",
+                "padding": "10px",
+
+            },
+            //"class": "your-custom-class",
+            "text": message
+        });
+
         $.LoadingOverlay("show", {
-            image: "",
+            //image: "",
             fontawesome: "fa fa-cog fa-spin",
-            /* text: message, */
-            background: "rgba(200, 200, 200, 0.7)"
+            //text: message,
+            background: "rgba(200, 200, 200, 0.7)",
+            custom: customElement,
         });
     }
 
@@ -1265,6 +1286,10 @@ jQuery(document).ready(function ($) {
 
         $('#errorMessage').html(output);
 
+    }
+
+    let HideErrorMessage = function () {
+        $('#errorMessage').hide();
     }
 
     let IsInShoppingCart = function (id) {

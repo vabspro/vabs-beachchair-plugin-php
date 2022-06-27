@@ -199,7 +199,7 @@ try {
 		$value    = 0;
 		$settings = new Settings();
 		$responseArray['data'] = 0;
-		$responseArray['error'] = 'Meiner, da hast Du Kacke gebaut!';
+		$responseArray['error'] = '';
 
 		try {
 
@@ -207,7 +207,6 @@ try {
 				throw new ValidationException("Fehler beim Laden der Einstellungen");
 			}
 
-			$settings->row;
 			if ($settings->row instanceof Settings) {
 				$value = $settings->row->additionalCalendarStartDays;
 				$responseArray['data'] = $value;
@@ -401,6 +400,9 @@ try {
 			if (empty($dateTo)) {
 				$message[] = sprintf ("Das Datum Bis war leer für Zeile %d", $i);
 			}
+
+			//Check, if chairs have already been booked in the meanwhile
+
 
 		}
 

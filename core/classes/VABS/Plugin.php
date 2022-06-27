@@ -67,34 +67,34 @@ class Plugin
 	#region SCRIPTS
 	public function ScriptsAll () {
 
-		wp_enqueue_script ('library', VABS_PLUGIN_PATH.'/assets/js/library.js', $this->jquery, '1.0.0', true);
-		wp_enqueue_script ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", $this->jquery, '1.0.0', true);
-		wp_enqueue_script ('flatpickr', VABS_PLUGIN_PATH."/assets/js/flatpickr.js", $this->jquery, '1.0.0', true);
+		wp_enqueue_script ('library', VABS_PLUGIN_PATH.'/assets/js/library.js', $this->jquery, Settings::VERSION, true);
+		wp_enqueue_script ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", $this->jquery, Settings::VERSION, true);
+		wp_enqueue_script ('flatpickr', VABS_PLUGIN_PATH."/assets/js/flatpickr.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('flatpickr-de', VABS_PLUGIN_PATH."/assets/js/flatpickr-de.js", [
 				$this->jquery,
 				'flatpickr'
-		], '1.0.0', true);
-		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.min.js', $this->jquery, '1.0.0', true);
+		], Settings::VERSION, true);
+		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.min.js', $this->jquery, Settings::VERSION, true);
 	}
 
 	public function ScriptsFrontPage () {
 
-		wp_enqueue_script ('loadingOverlay', VABS_PLUGIN_PATH."/assets/js/loadingOverlay.js", $this->jquery, '1.0.0', true);
-		wp_enqueue_script ('leaflet', VABS_PLUGIN_PATH."/assets/js/leaflet.js", $this->jquery, '1.0.0', true);
+		wp_enqueue_script ('loadingOverlay', VABS_PLUGIN_PATH."/assets/js/loadingOverlay.js", $this->jquery, Settings::VERSION, true);
+		wp_enqueue_script ('leaflet', VABS_PLUGIN_PATH."/assets/js/leaflet.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('flatpickr-rangePlugin', VABS_PLUGIN_PATH."/assets/js/flatpickr-rangePlugin.js", [
 				$this->jquery,
 				'flatpickr'
-		], '1.0.0', true);
-		wp_enqueue_script ('select2', VABS_PLUGIN_PATH."/assets/js/select2.js", $this->jquery, '1.0.0', true);
+		], Settings::VERSION, true);
+		wp_enqueue_script ('select2', VABS_PLUGIN_PATH."/assets/js/select2.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('script', VABS_PLUGIN_PATH.'/assets/js/script.js', [
 				$this->jquery
-		], '1.0.0', true);
+		], Settings::VERSION, true);
 
 	}
 
 	public function ScriptsAdmin () {
 
-		wp_enqueue_script ('admin', VABS_PLUGIN_PATH.'/assets/js/admin.js', $this->jquery, '1.0.0', true);
+		wp_enqueue_script ('admin', VABS_PLUGIN_PATH.'/assets/js/admin.js', $this->jquery, Settings::VERSION, true);
 
 	}
 	#endregion
@@ -541,7 +541,7 @@ class Plugin
 
 										<div class="vabs__container" id="vabs__dateSelectContainer">
 											<h5>Wähle einen oder mehrere Tag(e)</h5>
-											<h5 style="color: #C00; display: none;" id="additionalCalendarStartDaysHint">Die Online Buchung ist erst ab <span id="additionalCalendarStartDate"></span> möglich.<br> Sie können aber am Strand selbst noch Ihren Korb buchen, sofern einer verfügbar ist.</h5>
+											<h5 style="color: #C00; display: none;" id="additionalCalendarStartDaysHint">Buchen Sie heute schon Ihren Korb für <span id="additionalCalendarStartDate"></span> oder später.<br> Bitte beachten Sie: Buchungen bis zum <span id="additionalCalendarStartDate2"></span> sind leider nicht online möglich. Sie können aber am Strand selbst noch Ihren Korb buchen, sofern einer verfügbar ist.</h5>
 
 											<h3>An- und Abreisetag anklicken!</h3>
 											<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
