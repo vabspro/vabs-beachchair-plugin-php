@@ -151,11 +151,24 @@ jQuery(document).ready(function ($) {
                 dateFormat: 'd.m.Y',
                 locale: 'de',
                 mode: "range",
-                onChange: function (dates) {
-                    if (dates.length === 2) {
-                        HandleDateChange(dates); //dates will be an object date
-                    }
+                onChange: function (dates, dateStr, instance) {
+
+
+
+
                 },
+                onClose: function (dates, dateStr) {
+
+                    if (typeof dates[1] === "undefined") {
+                        console.log("OnClose: Date 2 = undefined");
+                        dates[1] = dates[0];
+                        $('.dateFrom').val(dateStr + " bis " + dateStr);
+                        dates = [dates[0], dates[1]];
+                    }
+
+                    HandleDateChange(dates); //dates will be an object date
+
+                }
             });
 
             node.on('change', '.locationId', HandleLocationChange);
@@ -173,11 +186,7 @@ jQuery(document).ready(function ($) {
 
         });
 
-        btnRefresh.click(function () {
-
-            console.log('dateFrom changed triggered');
-            fp.setDate(fp.selectedDates, true);
-        });
+        btnRefresh.click(HandleDateChange);
 
         LoadBeachChairTypes();
         //LoadMapSettings();
@@ -221,28 +230,24 @@ jQuery(document).ready(function ($) {
 
     let HandleDateChange = function (dates) {
 
-        SetModus('normal');
+        HideAlertMessage();
+        $('#vacancyList').html('');
 
         try {
 
-            HideAlertMessage();
-
-            $('#vacancyList').html('');
-
-            if (dates.length !== 2) {
-
-                ShowAlertMessage('danger', 'Fehler!', 'Das Datum scheint nicht im richtigen Format übergeben wurden zu sein');
-
+            if (dates.length === 2) {
+                globalStartDate = dates[0];
+                globalEndDate = dates[1];
+            }else{
+                throw 'Das Datum scheint nicht im richtigen Format übergeben wurden zu sein';
             }
+
+            SetModus('normal');
 
             $('#vabs__leafLetMap').hide();
             $('#vabs__flexMap').hide();
 
             //dates is a date object
-
-            globalStartDate = dates[0];
-            globalEndDate = dates[1];
-
             globalStartDateFormatted = globalStartDate.ddmmyyyy();
             globalEndDateFormatted = globalEndDate.ddmmyyyy();
 

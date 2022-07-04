@@ -2,6 +2,7 @@
 
 namespace VABS;
 
+use DateInterval;
 use DateTime;
 use DD\Helper\Date;
 use DD\Mailer\Mailer;
@@ -236,6 +237,15 @@ class Plugin
 						<label for="additionalCalendarStartDays" class="col-sm-2 col-form-label">Anzahl +Tage:</label>
 						<div class="col-sm-2">
 							<input type="number" class="border bg-light form-control" id="additionalCalendarStartDays" value="<?php echo $row->additionalCalendarStartDays ?? 0; ?>">
+						</div>
+
+					</div>
+
+					<div class="form-group row">
+
+						<label for="additionalCalendarStartDaysText" class="col-sm-2 col-form-label">Text auf der Webseite:</label>
+						<div class="col-sm-10">
+							<textarea class="border bg-light form-control" id="additionalCalendarStartDaysText"><?php echo $row->additionalCalendarStartDaysText ?? ''; ?></textarea>
 						</div>
 
 					</div>
@@ -541,7 +551,32 @@ class Plugin
 
 										<div class="vabs__container" id="vabs__dateSelectContainer">
 											<h5>Wähle einen oder mehrere Tag(e)</h5>
-											<h5 style="color: #C00; display: none;" id="additionalCalendarStartDaysHint">Buchen Sie heute schon Ihren Korb für <span id="additionalCalendarStartDate"></span> oder später.<br> Bitte beachten Sie: Buchungen bis zum <span id="additionalCalendarStartDate2"></span> sind leider nicht online möglich. Sie können aber am Strand selbst noch Ihren Korb buchen, sofern einer verfügbar ist.</h5>
+
+											<?php
+											$date = new DateTime();
+											$additionalStartDays = (int)$row->additionalCalendarStartDays;
+											$additionalStartDaysText = strip_tags ($row->additionalCalendarStartDaysText);
+											if(!empty($additionalStartDays) && !empty($additionalStartDaysText)){
+
+												$additionalStartDays = $additionalStartDays - 1;
+
+												if (strstr ($additionalStartDaysText, '#datum2#')) {
+													$date = new DateTime();
+													$date->add (new DateInterval('P'.$additionalStartDays.'D'));
+													$additionalStartDaysText = str_replace('#datum2#', $date->format ('d.m.Y'), $additionalStartDaysText);
+												}
+
+												if (strstr ($additionalStartDaysText, '#datum1#')) {
+													//Add another day when booking is available
+													$date->add (new DateInterval('P1D'));
+													$additionalStartDaysText = str_replace ('#datum1#', $date->format ('d.m.Y'), $additionalStartDaysText);
+												}
+												?>
+												<h5 style="color: #C00;" id="additionalCalendarStartDaysHint"><?php echo $additionalStartDaysText; ?></h5>
+												<?php
+											}
+
+											?>
 
 											<h3>An- und Abreisetag anklicken!</h3>
 											<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">

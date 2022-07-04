@@ -10,7 +10,7 @@ use PDOException;
 class Settings
 {
 
-	const VERSION = "2.02";
+	const VERSION = "2.03";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';
@@ -40,7 +40,8 @@ class Settings
 	public string $blockBookingText   = '';
 
 	//Calendar start date
-	public int $additionalCalendarStartDays  = 0;
+	public int    $additionalCalendarStartDays     = 0;
+	public string $additionalCalendarStartDaysText = '';
 
 	public int $debug  = 0;
 	/**
@@ -90,7 +91,8 @@ class Settings
 						IFNULL(blockBookingFrom,'') as blockBookingFrom,
 						IFNULL(blockBookingTo,'') as blockBookingTo,
 						IFNULL(blockBookingText,'') as blockBookingText,
-						IFNULL(additionalCalendarStartDays,'') as additionalCalendarStartDays
+						IFNULL(additionalCalendarStartDays,0) as additionalCalendarStartDays,
+						IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText
 					FROM
 						vabs_settings";
 			$stm = $conPDO->prepare ($SQL);
@@ -155,7 +157,8 @@ class Settings
 						blockBookingFrom = :blockBookingFrom,
 						blockBookingTo = :blockBookingTo,
 						blockBookingText = :blockBookingText,
-						additionalCalendarStartDays = :additionalCalendarStartDays";
+						additionalCalendarStartDays = :additionalCalendarStartDays,
+						additionalCalendarStartDaysText = :additionalCalendarStartDaysText";
 			$stm = $conPDO->prepare ($SQL);
 			$stm->bindValue (':apiToken', $this->apiToken);
 			$stm->bindValue (':apiClientId', $this->apiClientId);
@@ -178,6 +181,7 @@ class Settings
 			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
 			$stm->bindValue (':blockBookingText', $this->blockBookingText);
 			$stm->bindValue (':additionalCalendarStartDays', $this->additionalCalendarStartDays);
+			$stm->bindValue (':additionalCalendarStartDaysText', $this->additionalCalendarStartDaysText);
 
 			$stm->execute ();
 
@@ -227,7 +231,8 @@ class Settings
 							`blockBookingFrom` DATE NULL,
 							`blockBookingTo` DATE NULL,
 							`blockBookingText` TEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`additionalCalendarStartDays` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0'
+							`additionalCalendarStartDays` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+							`additionalCalendarStartDaysText` TEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci'
 						) COLLATE='utf8_general_ci' ENGINE=InnoDB;";
 				$stm = $conPDO->prepare ($SQL);
 				$stm->execute ();
@@ -256,7 +261,8 @@ class Settings
 							blockBookingFrom = '',
 							blockBookingTo = '',
 							blockBookingText = '',
-							additionalCalendarStartDays = 0";
+							additionalCalendarStartDays = 0,
+							additionalCalendarStartDaysText = ''";
 
 				if(file_exists ($this->path)){
 					include $this->path;
@@ -282,6 +288,7 @@ class Settings
 						$stm->bindValue (':versionNumber', self::VERSION);
 						$stm->bindValue (':debug', $settings['debug'], 1);
 						$stm->bindValue (':additionalCalendarStartDays', $settings['additionalCalendarStartDays'], PDO::PARAM_INT);
+						$stm->bindValue (':additionalCalendarStartDaysText', $settings['additionalCalendarStartDaysText']);
 					}
 				}else{
 					$stm = $conPDO->prepare ($SQL);
@@ -302,6 +309,7 @@ class Settings
 					$stm->bindValue (':smtpPass', '');
 					$stm->bindValue (':versionNumber', self::VERSION);
 					$stm->bindValue (':additionalCalendarStartDays', 0, PDO::PARAM_INT);
+					$stm->bindValue (':additionalCalendarStartDaysText', '');
 				}
 
 				$stm->execute ();
@@ -315,6 +323,16 @@ class Settings
 				try {
 					$stm->execute ();
 				}catch(Exception $e){
+					//Do NOTHING as the columns might already be exist
+				}
+
+				//Check if new fields are in the database
+				$SQL = "ALTER TABLE `vabs_settings`
+							ADD COLUMN `additionalCalendarStartDaysText` varchar(500) NULL DEFAULT NULL AFTER `additionalCalendarStartDays`;";
+				$stm = $conPDO->prepare ($SQL);
+				try {
+					$stm->execute ();
+				} catch (Exception $e) {
 					//Do NOTHING as the columns might already be exist
 				}
 

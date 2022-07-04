@@ -58,6 +58,11 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
+### 2.03 ###
+
+* add possibility to define the text for booking only for next day(s)
+* fix calendar when user wants to book only for one day (prevent forcing double-click) 
+
 ### 2.02 ###
 
 * add possibility to define the minimum start day in the calendar based on the current date +x days  

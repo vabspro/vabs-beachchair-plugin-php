@@ -54,6 +54,7 @@ jQuery(document).ready(function ($) {
         let blockBookingText = $('#blockBookingText').val();
 
         let additionalCalendarStartDays = $('#additionalCalendarStartDays').val();
+        let additionalCalendarStartDaysText = $('#additionalCalendarStartDaysText').val();
 
         if(payPal){
             if(payPalClientId.length == 0){
@@ -101,6 +102,7 @@ jQuery(document).ready(function ($) {
                     blockBookingTo: blockBookingTo,
                     blockBookingText: blockBookingText,
                     additionalCalendarStartDays: additionalCalendarStartDays,
+                    additionalCalendarStartDaysText: additionalCalendarStartDaysText,
 
 
                 },
