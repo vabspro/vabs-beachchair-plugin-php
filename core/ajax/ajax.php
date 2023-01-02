@@ -28,15 +28,6 @@ require_once '../../vendor/autoload.php';
 require_once '../../config.php';
 require_once $_SERVER['DOCUMENT_ROOT'].'/wp-config.php';
 
-$allowedMethods = [
-		'SaveSettings',
-		'GetReferrer',
-		'GetDSGVO',
-		'GetAGBS',
-		'GenerateShortCode',
-		'GetLocations',
-];
-
 $method = $_POST['method'] ?? '';
 
 $responseArray['error'] = '';
@@ -111,7 +102,6 @@ try {
 		$response = $API->GetDSGVO ();
 		$array = json_decode ($response,true );
 
-
 		$responseArray['data'] = $array['link'] ?? '';
 		$responseArray['error'] = $array['error'] ?? '';
 
@@ -122,8 +112,6 @@ try {
 		$API      = new API();
 		$response = $API->GetAGBS ();
 		$array    = json_decode ($response, true);
-
-		//print_r($array);
 
 		$responseArray['data'] = $array['link'] ?? '';
 		$responseArray['error'] = $array['error'] ?? '';
@@ -171,8 +159,6 @@ try {
 		$response = $API->GetRows ();
 		$array    = json_decode ($response, true);
 
-		//print_r($array);
-
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
 
@@ -187,8 +173,6 @@ try {
 		$API      = new API();
 		$response = $API->GetPrice ($id, $dateFrom, $dateTo);
 		$array    = json_decode ($response, true);
-
-		//print_r($array);
 
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
@@ -215,9 +199,7 @@ try {
 				throw new ValidationException("row wasn't instance of Settings");
 			}
 
-		} catch(ValidationException $e) {
-			$responseArray['error'] = $e->getMessage ();
-		} catch(Exception $e) {
+		} catch(ValidationException|Exception $e) {
 			$responseArray['error'] = $e->getMessage ();
 		}
 
@@ -230,8 +212,6 @@ try {
 		$API      = new API();
 		$response = $API->GetBeachChairs ($locationId);
 		$array    = json_decode ($response, true);
-
-		//print_r($array);
 
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
@@ -248,8 +228,6 @@ try {
 		$response = $API->GetFreeChairs ($dateFrom, $dateTo, $locationId);
 		$array    = json_decode ($response, true);
 
-		//print_r($array);
-
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
 
@@ -265,8 +243,6 @@ try {
 		$API      = new API();
 		$response = $API->GetVacancy ($dateFrom, $dateTo, $locationIds, $beachChairTypeIds);
 		$array    = json_decode ($response, true);
-
-		//print_r($array);
 
 		$responseArray['data'] = $array;
 		$responseArray['error'] = $array['error'] ?? '';
@@ -372,11 +348,9 @@ try {
 		}
 
 		//Comment
-
 		$comment = $formDataDecoded['comment'] ?: '';
 
 		//Lines
-		//$message[] = print_r($lines, true);
 		$i=0;
 		foreach ($lines as $line){
 
@@ -403,7 +377,16 @@ try {
 			}
 
 			//Check, if chairs have already been booked in the meanwhile
+			$API      = new API();
+			$response = $API->IsBooked ($id, $dateFrom, $dateTo);
+			$array    = json_decode ($response, true);
 
+			$isBooked = (int)$array['isBooked'];
+			$chairName = $array['chairNumber'];
+			if($isBooked){
+				$message[] = sprintf ("Sorry, aber der Korb %s wurde in der Zwischenzeit bereits gebucht.", $chairName);
+
+			}
 
 		}
 
@@ -474,11 +457,10 @@ try {
 			if(empty($unitPrice)){
 				throw new ValidationException("Kein Preis übergeben");
 			}
+
 			$API      = new API();
 			$response = $API->CreateSalesOrderLine ($salesHeaderId,$id, $quantity,OBJECT_TYPE_BEACH_CHAIR,$dateFrom,$dateTo);
 			$array    = json_decode ($response, true);
-
-			//print_r ($array);
 
 			$salesLineId = $array['sales_line_id'] ? : 0;
 			if (empty($salesLineId)) {

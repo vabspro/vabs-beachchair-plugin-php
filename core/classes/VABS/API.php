@@ -52,7 +52,7 @@ class API
 	 */
 	public function GetBeachChairs(int $locationId = 0) : string {
 
-		$requestUrl = empty($locationId) ? '/beachchair/chair/' : '/beachchair/chair/location/'.$locationId;
+		$requestUrl = empty($locationId) ? '/beachchair/chair' : '/beachchair/chair/location/'.$locationId;
 
 		return $this->SendGetCurlRequest ($requestUrl);
 
@@ -239,13 +239,20 @@ class API
 
 	}
 
+	public function IsBooked(int $id, string $dateFrom, string $dateTo){
+
+		$requestUrl = sprintf ('/beachchair/booking/isBooked/%d/%s/%s', $id, Date::FormatDateToFormat ($dateFrom, Date::DATE_FORMAT_SQL_DATE), Date::FormatDateToFormat ($dateTo, Date::DATE_FORMAT_SQL_DATE));
+
+		return $this->SendGetCurlRequest ($requestUrl);
+	}
+
 	/**
 	 * @param Contact $Contact
 	 * @return bool|string
 	 */
 	public function CreateContact (Contact $Contact) {
 
-		$requestUrl = '/contact/';
+		$requestUrl = '/contact';
 
 		return $this->SendPostCurlRequest($requestUrl, (array)$Contact);
 
@@ -278,7 +285,7 @@ class API
 	 */
 	public function CreateSalesOrderLine (int $salesHeaderId, int $id, int $quantity, int $objectCodeId, string $dateFrom, string $dateTo) {
 
-		$requestUrl = '/sales/line/';
+		$requestUrl = '/sales/line';
 
 		return $this->SendPostCurlRequest ($requestUrl, [
 			'sales_header_id' => $salesHeaderId,
