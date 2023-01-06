@@ -650,35 +650,35 @@ class Plugin
 
 											<div class="row g-3">
 												<div class="col-sm-3">
-													<input name="firstName" class="border bg-light" type="text" placeholder="Vorname" required>
+													<input name="firstName" class="border bg-light form-control" type="text" placeholder="Vorname" required>
 												</div>
 												<div class="col-sm-3">
-													<input name="lastName" class="border bg-light" type="text" placeholder="Nachname" required>
+													<input name="lastName" class="border bg-light form-control" type="text" placeholder="Nachname" required>
 												</div>
 												<div class="col-sm-3">
-													<input name="email" class="border bg-light" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
+													<input name="email" class="border bg-light form-control" type="email" placeholder="Emailadresse" data-parsley-trigger="change" required>
 												</div>
 												<div class="col-sm-3">
-													<input name="tel" class="border bg-light" type="text" placeholder="Telefonnummer">
+													<input name="tel" class="border bg-light form-control" type="text" placeholder="Telefonnummer">
 												</div>
 											</div>
 											<div class="row g-3">
 												<div class="col-sm-2">
-													<input name="postCode" class="border bg-light" type="text" placeholder="PLZ" required>
+													<input name="postCode" class="border bg-light form-control" type="text" placeholder="PLZ" required>
 												</div>
 												<div class="col-sm-4">
-													<input name="city" class="border bg-light" type="text" placeholder="Ort" required>
+													<input name="city" class="border bg-light form-control" type="text" placeholder="Ort" required>
 												</div>
 												<div class="col-sm-4">
-													<input name="street" class="border bg-light" type="text" placeholder="Strasse" required>
+													<input name="street" class="border bg-light form-control" type="text" placeholder="Strasse" required>
 												</div>
 												<div class="col-sm-2">
-													<input name="number" class="border bg-light" type="text" placeholder="Hausnummer" required>
+													<input name="number" class="border bg-light form-control" type="text" placeholder="Hausnummer" required>
 												</div>
 											</div>
 											<div class="row g-3">
 												<div class="col-12">
-													<textarea name="comment" class="col-12 border bg-light" placeholder="Ihre Bemerkung" rows="1"></textarea>
+													<textarea name="comment" class="col-12 border bg-light form-control" placeholder="Ihre Bemerkung" rows="1"></textarea>
 												</div>
 											</div>
 

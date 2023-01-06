@@ -1,7 +1,5 @@
 jQuery(document).ready(function ($) {
 
-    //let debug = true;
-
     //Declare Variables
     let directory = '/wp-content/plugins/vabs-wp-plugin/core/ajax';
 
@@ -34,6 +32,7 @@ jQuery(document).ready(function ($) {
     let successMessage = $('#successMessage');
     let errorMessage = $('#errorMessage');
     let vabs__bookingContainer = $('#vabs__bookingContainer');
+    let node = $('#vabs__bookingContainer'); //Must be declared twice otherwise it wont work :(
     let vabs__chairCardBtnAddToShoppingCart = $('#vabs__chairCardBtnAddToShoppingCart');
     let vabs__chairCardBtnRemoveFromShoppingCart = $('#vabs__chairCardBtnRemoveFromShoppingCart');
     let chairCardHeader = $('.vabs__chair-header');
@@ -51,10 +50,6 @@ jQuery(document).ready(function ($) {
         2: "R2L",
         3: "Center",
     };
-    /*let orders = {
-        1: "left",
-        2: "right"
-    };*/
     let beachLocation = {
         id: 0,
         name: '',
@@ -112,6 +107,7 @@ jQuery(document).ready(function ($) {
         dateToFormatted: '',
         unitPrice: '',
         bookable: '',
+        seasonsOutput: [],
     };
 
     //Methods
@@ -185,14 +181,14 @@ jQuery(document).ready(function ($) {
                 }
             });
 
-            vabs__bookingContainer.on('change', '.locationId', HandleLocationChange);
-            vabs__bookingContainer.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
-            vabs__bookingContainer.on('click', '.flexChair', HandleMapChairClick);
-            vabs__bookingContainer.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
-            vabs__bookingContainer.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-            vabs__bookingContainer.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-            vabs__bookingContainer.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
-            vabs__bookingContainer.on('click', '#btnLogShoppingCart', LogShoppingCart);
+            node.on('change', '.locationId', HandleLocationChange);
+            node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
+            node.on('click', '.flexChair', HandleMapChairClick);
+            node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
+            node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+            node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+            node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
+            node.on('click', '#btnLogShoppingCart', LogShoppingCart);
 
         }).fail(function (error) {
 
@@ -203,7 +199,6 @@ jQuery(document).ready(function ($) {
         btnRefresh.click(HandleDateChange);
 
         LoadBeachChairTypes();
-        //LoadMapSettings();
 
 
     }
@@ -228,9 +223,7 @@ jQuery(document).ready(function ($) {
 
         }).then(function (response) {
 
-            //let error = response.error;
             beachChairTypes = response.data;
-            console.log(beachChairTypes);
 
         }).fail(function (error) {
 
@@ -292,7 +285,6 @@ jQuery(document).ready(function ($) {
 
             }).done(function () {
 
-                console.log('Calling GetLocations with success');
                 HideLoadingOverlay();
 
             }).fail(function (error) {
@@ -383,7 +375,9 @@ jQuery(document).ready(function ($) {
             })
 
         } catch (error) {
+
             ShowErrorMessage("Fehler", error);
+
         }
 
     }
@@ -639,7 +633,6 @@ jQuery(document).ready(function ($) {
         HideErrorMessage();
 
         let id = $(this).attr('data-id');
-        currentBeachChair.id = id;
         let name = $(this).attr('data-name');
         let beachChairTypeId = $(this).attr('data-beachChairTypeId');
         let beachChairTypeName = $(this).attr('data-beachChairTypeName');
@@ -656,11 +649,15 @@ jQuery(document).ready(function ($) {
         let bookable = $(this).attr('data-bookable');
 
         if(id != null && Number(id) !== 0 && id != '' && typeof id !== "undefined"){
+
+            //let index = IsInShoppingCart(id);
+
             if (bookable == 1) {
 
-                ShowBeachChairPopupCard(id, name, beachChairTypeId, beachChairTypeName, locationId, beachChairLocationName, beachRowName, rowDirection, rowDirectionName, dateFrom, dateFromFormatted, dateTo, dateToFormatted, unitPrice);
+                ShowBeachChairPopupCard(id, name, beachChairTypeId, beachChairTypeName, locationId, beachChairLocationName, beachRowName, rowDirection, rowDirectionName, dateFrom, dateFromFormatted, dateTo, dateToFormatted, unitPrice, bookable);
 
             } else {
+                currentBeachChair.id = id; //For Deletion
                 currentBeachChair.bookable = 0;
                 //Remove Chair form Shopping Card, in case someone else has booked in the meanwhile
                 TriggerAddOrRemoveToOrFromShoppingCart();
@@ -671,7 +668,6 @@ jQuery(document).ready(function ($) {
         }else{
             ShowErrorMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
         }
-
 
 
     }
@@ -688,7 +684,7 @@ jQuery(document).ready(function ($) {
         $('#vabs__flexMap').hide();
     }
 
-    let ShowBeachChairPopupCard = function (id, name, beachChairTypeId, beachChairTypeName, locationId, beachChairLocationName, beachRowName, rowDirection, rowDirectionName, dateFrom, dateFromFormatted, dateTo, dateToFormatted, unitPrice) {
+    let ShowBeachChairPopupCard = function (id, name, beachChairTypeId, beachChairTypeName, locationId, beachChairLocationName, beachRowName, rowDirection, rowDirectionName, dateFrom, dateFromFormatted, dateTo, dateToFormatted, unitPrice, bookable) {
 
         LogShoppingCart();
 
@@ -707,18 +703,14 @@ jQuery(document).ready(function ($) {
         currentBeachChair.dateTo = dateTo;
         currentBeachChair.dateToFormatted = dateToFormatted;
         currentBeachChair.unitPrice = unitPrice;
+        currentBeachChair.bookable = bookable;
 
         vabs__chairCardName.text(name);
         vabs__chairCardType.text(beachChairTypeName);
         let imageUrl = '';
         if (beachChairTypes.length > 0) {
-            //console.log('Length > 0');
             for (let i = 0; i < beachChairTypes.length; i++) {
-                //console.log('Current beachChairTypes at i = ' + i);
-                //console.log(beachChairTypes[i]);
-                //console.log('Looking for id: ' + beachChairTypeId);
                 if (beachChairTypes[i]['id'] == beachChairTypeId) {
-                    //console.log('MATCH!')
                     imageUrl = beachChairTypes[i]["picture"] != "" ? beachChairTypes[i]["pictureWebPath"] : '';
                     break;
                 }
@@ -740,8 +732,6 @@ jQuery(document).ready(function ($) {
         }
 
         chairCard.show();
-
-        LogShoppingCart();
 
     }
 
@@ -786,7 +776,7 @@ jQuery(document).ready(function ($) {
 
         }).done(function () {
 
-            console.log('Calling GetVacancy with success');
+            //console.log('Calling GetVacancy with success');
 
         }).then(function (response) {
 
@@ -845,16 +835,12 @@ jQuery(document).ready(function ($) {
 
         }).done(function () {
 
-            console.log('Calling GetLocations for Hopping with success');
             HideLoadingOverlay();
 
         }).then(function (response) {
 
             let error = response.error;
             let locationsSeasonBookable = response.data;
-
-            console.log("Bookable Hopping Locations");
-            console.log(locationsSeasonBookable);
 
             if (error !== "" || error.length !== 0) {
                 throw error;
@@ -942,10 +928,8 @@ jQuery(document).ready(function ($) {
         try {
 
             if (id == 0 || id == '' || bookable == 0) {
-                throw "Dieser Korb kann nicht gebicht werden";
+                throw "Dieser Korb kann nicht gebucht werden";
             }
-
-            console.log('Current BeachChair ID: ' + id);
 
             let node = $('#beachChair_' + id);
 
@@ -953,10 +937,9 @@ jQuery(document).ready(function ($) {
             let isInCart = index !== -1;
 
             let price = 0;
+            let seasons = [];
 
             if (isInCart) {
-
-                console.log("Remove From Cart");
 
                 //Remove Mark Icon
                 node.find('i').remove();
@@ -966,10 +949,7 @@ jQuery(document).ready(function ($) {
 
                 RenderShoppingCart();
 
-
             } else {
-
-                console.log("Adding to Cart");
 
                 //Add Mark Icon
                 node.prepend("<i/>");
@@ -999,8 +979,10 @@ jQuery(document).ready(function ($) {
                         if (error === "") {
 
                             price = parseFloat(data["price"]);
+                            seasons = typeof data["seasons"] == "undefined" ? [] : data["seasons"];
 
                             currentBeachChair.unitPrice = price;
+                            currentBeachChair.seasonsOutput = seasons;
                             shoppingCart.push(currentBeachChair);
                             RenderShoppingCart();
 
@@ -1035,7 +1017,7 @@ jQuery(document).ready(function ($) {
             chair = shoppingCart[i];
             lineHtml += '' +
                 '<tr>' +
-                '   <td><b>' + chair.name + '</b></td>' +
+                '   <td><b># ' + chair.name + '</b></td>' +
                 '   <td>Typ: <b>' + chair.beachChairTypeName + '</b><br>Abschnitt: <b>' + chair.beachChairLocationName + '</b><br>Reihe: <b>' + chair.beachRowName + '</b></td>' +
                 '   <td>' + chair.dateFromFormatted + ' - ' + chair.dateToFormatted + '</td>' +
                 '   <td>' + FormatToPrice(chair.unitPrice) + '</td>' +
@@ -1046,12 +1028,10 @@ jQuery(document).ready(function ($) {
                     seasonsOutput = Object.create(seasonsOutputTemplate);
                     seasonsOutput = chair.seasonsOutput[j];
                     lineHtml += '' +
-                        '<tr>' +
-                        '   <td colspan="4">' +
-                        '       Saison: <b>' + seasonsOutput.seasonName + '</b><br>' +
-                        '       Anzahl Tage: ' + seasonsOutput.amountOfDaysBookedInThatSeason + '<br>' +
-                        '       Einzelpreis: <b>' + seasonsOutput.singlePrice + '</b>' +
-                        '       Saisonpreis: <b>' + seasonsOutput.seasonPrice + '</b>' +
+                        '<tr class="seasonDescription">' +
+                        '   <td>&nbsp;</td>' +
+                        '   <td colspan="3">' +
+                        '       ' + seasonsOutput.seasonName + ': ' + seasonsOutput.amountOfDaysBookedInThatSeason + ' x ' + seasonsOutput.singlePrice + ' &euro;</b>' + ' = <b>' + seasonsOutput.seasonPrice + ' &euro;</b>' +
                         '   </td>' +
                         '</tr>';
                 }
@@ -1062,7 +1042,7 @@ jQuery(document).ready(function ($) {
 
         output = '' +
             '<div class="table-responsive">' +
-            '<table class="table table-striped table-sm table-responsive">' +
+            '<table class="table table-sm table-responsive">' +
             '  <thead class="table-dark">' +
             '    <tr>' +
             /*'      <th scope="col">#</th>' +*/
@@ -1136,8 +1116,6 @@ jQuery(document).ready(function ($) {
 
             success: function (response) {
 
-                console.log(response);
-
                 let error = response.error;
                 let redirectLink = response.redirectLink;
                 let confirmationUrl = response["confirmationUrl"];
@@ -1153,7 +1131,6 @@ jQuery(document).ready(function ($) {
                     //Hide Form
                     } else {
                         vabs__bookingContainer.remove();
-                        //Show Success Message
                         successMessage.show();
                     }
 
@@ -1186,8 +1163,6 @@ jQuery(document).ready(function ($) {
         if (map != null) {
             map.remove();
         }
-
-        //console.log("using Lat: " + latCenter + " Lon:" + lonCenter);
 
         map = L.map(targetNodeId, {
             //center: [latCenter, lonCenter],
@@ -1250,9 +1225,6 @@ jQuery(document).ready(function ($) {
 
         markers.push([lat,lng]);
 
-        //console.log(markers);
-
-
     }
 
     let greenIcon = new L.Icon({
@@ -1307,7 +1279,6 @@ jQuery(document).ready(function ($) {
 
     let EmptyShoppingCart = function () {
         shoppingCart = [];
-        console.log('Clear Shopping Cart');
         vabs__shoppingCartList.html('');
     }
 
@@ -1322,12 +1293,10 @@ jQuery(document).ready(function ($) {
             if (mode === 'normal') {
                 $('.normal').show();
                 $('.hopping').hide();
-                console.log("Entering NORMAL mode");
             } else {
 
                 $('.normal').hide();
                 $('.hopping').show();
-                console.log("Entering HOPPING mode");
 
                 LoadBeachHoppingFilters();
 
@@ -1381,14 +1350,14 @@ jQuery(document).ready(function ($) {
     }
 
     let BindSelects = function () {
-        vabs__bookingContainer.on('change', '#hoppingLocationId', TriggerBeachHopping);
-        vabs__bookingContainer.on('change', '#hoppingBeachChairTypeId', TriggerBeachHopping);
+        node.on('change', '#hoppingLocationId', TriggerBeachHopping);
+        node.on('change', '#hoppingBeachChairTypeId', TriggerBeachHopping);
         $('#hoppingLocationId, #hoppingBeachChairTypeId').select2({width: '100%'});
     }
 
     let UnBindSelects = function () {
-        vabs__bookingContainer.off('change', '#hoppingLocationId', TriggerBeachHopping);
-        vabs__bookingContainer.off('change', '#hoppingBeachChairTypeId', TriggerBeachHopping);
+        node.off('change', '#hoppingLocationId', TriggerBeachHopping);
+        node.off('change', '#hoppingBeachChairTypeId', TriggerBeachHopping);
     }
 
     let LogShoppingCart = function () {

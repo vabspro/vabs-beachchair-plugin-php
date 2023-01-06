@@ -58,6 +58,12 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
+### 2.04 ###
+
+* implement new VABS API (URL, structure and endpoints)
+* fix removing error messages after successful call was made
+
+
 ### 2.03 ###
 
 * add possibility to define the text for booking only for next day(s)

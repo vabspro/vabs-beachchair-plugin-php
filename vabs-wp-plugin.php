@@ -14,13 +14,13 @@
  *
  * @wordpress-plugin
  * Plugin Name:       VABS Form Generator
- * Plugin URI:        https://github.com/g-kanoufi/wp-cleanup-and-basic-functions
- * Description:       Provides forms to send data request to the VABS API
- * Version:           2.0.0
+ * Plugin URI:        https://github.com/vabspro/vabs-beachchair-plugin-php
+ * Description:       Provides forms to send data requests to the VABS API
+ * Version:           2.0.4
  * Author:            Ronny Drechsler-Hildebrandt
  * Author URI:        https://drechsler-development.de
- * License:           GPL-2.0+
- * License URI:       https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+ * License:           MIT
+ * License URI:       https://choosealicense.com/licenses/mit
  * Text Domain:       vabs-wp-plugin
  */
 
