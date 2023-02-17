@@ -521,8 +521,9 @@ class Plugin
 							try {
 
 								$API = new API();
-								echo $API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+								$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
 								$API->SendInvoice ($salesHeaderId);
+								echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
 
 								if ($debug) {
 									Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
@@ -533,7 +534,7 @@ class Plugin
 							}
 
 
-							//echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
+
 						} else {
 							$errorMessage = "Capture ID was empty or couldn't get";
 							Log::Log ($errorMessage);
