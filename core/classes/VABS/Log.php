@@ -10,7 +10,7 @@ class Log
 	/**
 	 * @param string $message
 	 */
-	public static function Log (string $message = "") {
+	public static function Log (string $message = ""): void {
 
 
 		if (!@file_exists (self::FOLDER)) {

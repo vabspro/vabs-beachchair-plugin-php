@@ -107,6 +107,17 @@ try {
 
 	}
 
+	if ($method == "GetConstants") {
+
+		$API = new API();
+		$response = $API->GetConstants ();
+		$array = json_decode ($response,true );
+
+		$responseArray['BEACHCHAIR_TYPES_BASE_PATH'] = $array['BEACHCHAIR_TYPES_BASE_PATH'] ?? '';
+		$responseArray['error'] = $array['error'] ?? '';
+
+	}
+
 	if ($method == "GetAGBS") {
 
 		$API      = new API();
@@ -425,7 +436,7 @@ try {
 
 		$contactId = $array['contact_id'] ? : 0;
 		if(empty($contactId)){
-			throw new ValidationException("Keine Kontakt-ID als Response zurückbekommen");
+			throw new ValidationException("Keine Kontakt-ID als Response zurückbekommen. Response:".$response);
 		}
 
 		#endregion
@@ -486,7 +497,7 @@ try {
 
 		$salesInvoiceId = $array['sales_invoice_id'] ? : 0;
 		if (empty($salesInvoiceId)) {
-			throw new ValidationException("Keine SalesInvoice-ID als Response zurückbekommen");
+			throw new ValidationException("Keine SalesInvoice-ID als Response zurückbekommen. Response:".$response);
 		}
 
 		$_SESSION['salesInvoiceId'] = $salesInvoiceId;

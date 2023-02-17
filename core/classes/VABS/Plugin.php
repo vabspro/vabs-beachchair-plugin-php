@@ -30,11 +30,11 @@ class Plugin
 
 	#region ACTIVATE/DEACTIVATE
 
-	public static function Activate () {
+	public static function Activate (): void {
 
 	}
 
-	public static function DeActivate () {
+	public static function DeActivate (): void {
 
 	}
 
@@ -43,30 +43,30 @@ class Plugin
 	#region ENQUE/REGISTER
 
 	#region STYLES
-	public function StylesAll () {
+	public function StylesAll (): void {
 
-		wp_enqueue_style ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css", [], false);
-		wp_enqueue_style ('flatpickr', VABS_PLUGIN_PATH.'/assets/css/flatpickr.css', [], false);
-
-	}
-
-	public function StylesFrontPage () {
-
-		wp_enqueue_style ('public', VABS_PLUGIN_PATH.'/assets/css/public.css', [], false);
-		wp_enqueue_style ('leaflet', VABS_PLUGIN_PATH.'/assets/css/leaflet.css', [], false);
-		wp_enqueue_style ('select2', VABS_PLUGIN_PATH.'/assets/css/select2.css', [], false);
+		wp_enqueue_style ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css");
+		wp_enqueue_style ('flatpickr', VABS_PLUGIN_PATH.'/assets/css/flatpickr.css');
 
 	}
 
-	public function StylesAdmin () {
+	public function StylesFrontPage (): void {
 
-		wp_enqueue_style ('admin', VABS_PLUGIN_PATH.'/assets/css/admin.css', ['bootstrap'], false);
+		wp_enqueue_style ('public', VABS_PLUGIN_PATH.'/assets/css/public.css');
+		wp_enqueue_style ('leaflet', VABS_PLUGIN_PATH.'/assets/css/leaflet.css');
+		wp_enqueue_style ('select2', VABS_PLUGIN_PATH.'/assets/css/select2.css');
+
+	}
+
+	public function StylesAdmin (): void {
+
+		wp_enqueue_style ('admin', VABS_PLUGIN_PATH.'/assets/css/admin.css', ['bootstrap']);
 
 	}
 	#endregion
 
 	#region SCRIPTS
-	public function ScriptsAll () {
+	public function ScriptsAll (): void {
 
 		wp_enqueue_script ('library', VABS_PLUGIN_PATH.'/assets/js/library.js', $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", $this->jquery, Settings::VERSION, true);
@@ -78,7 +78,7 @@ class Plugin
 		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.min.js', $this->jquery, Settings::VERSION, true);
 	}
 
-	public function ScriptsFrontPage () {
+	public function ScriptsFrontPage (): void {
 
 		wp_enqueue_script ('loadingOverlay', VABS_PLUGIN_PATH."/assets/js/loadingOverlay.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('leaflet', VABS_PLUGIN_PATH."/assets/js/leaflet.js", $this->jquery, Settings::VERSION, true);
@@ -93,7 +93,7 @@ class Plugin
 
 	}
 
-	public function ScriptsAdmin () {
+	public function ScriptsAdmin (): void {
 
 		wp_enqueue_script ('admin', VABS_PLUGIN_PATH.'/assets/js/admin.js', $this->jquery, Settings::VERSION, true);
 
@@ -101,7 +101,7 @@ class Plugin
 	#endregion
 
 	#region Register and Enqueue
-	public function RegisterScripts () {
+	public function RegisterScripts (): void {
 
 		//For all
 		add_action ('init', [
@@ -140,7 +140,7 @@ class Plugin
 
 	#region CREATE MENU
 
-	public function AddAdminMenu () {
+	public function AddAdminMenu (): void {
 
 		global $submenu;
 
@@ -156,7 +156,7 @@ class Plugin
 
 	#region ADMIN AREA
 
-	public function ShowSettingsForm () {
+	public function ShowSettingsForm (): void {
 
 		try {
 
@@ -373,7 +373,7 @@ class Plugin
 
 	}
 
-	public function ShowShortCodeForm () {
+	public function ShowShortCodeForm (): void {
 
 		$this->HTMLHeader ();
 		?>
@@ -441,8 +441,6 @@ class Plugin
 						</div>
 					</div>
 					<?php
-					$content = ob_get_contents ();
-					ob_end_clean ();
 
 				}else{
 
@@ -520,16 +518,22 @@ class Plugin
 
 						if (!empty($captureId)) {
 
-							$API = new API();
-							$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
-							$API->UpdateSalesInvoiceStatus ($salesHeaderId, $salesInvoiceId, 5);
-							$API->SendInvoice ($salesHeaderId);
+							try {
 
-							if ($debug) {
-								Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
+								$API = new API();
+								echo $API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
+								$API->SendInvoice ($salesHeaderId);
+
+								if ($debug) {
+									Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
+								}
+
+							}catch (Exception $e) {
+								echo $e->getMessage ();
 							}
 
-							echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
+
+							//echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
 						} else {
 							$errorMessage = "Capture ID was empty or couldn't get";
 							Log::Log ($errorMessage);
@@ -560,13 +564,13 @@ class Plugin
 
 												$additionalStartDays = $additionalStartDays - 1;
 
-												if (strstr ($additionalStartDaysText, '#datum2#')) {
+												if (str_contains ($additionalStartDaysText, '#datum2#')) {
 													$date = new DateTime();
 													$date->add (new DateInterval('P'.$additionalStartDays.'D'));
 													$additionalStartDaysText = str_replace('#datum2#', $date->format ('d.m.Y'), $additionalStartDaysText);
 												}
 
-												if (strstr ($additionalStartDaysText, '#datum1#')) {
+												if (str_contains ($additionalStartDaysText, '#datum1#')) {
 													//Add another day when booking is available
 													$date->add (new DateInterval('P1D'));
 													$additionalStartDaysText = str_replace ('#datum1#', $date->format ('d.m.Y'), $additionalStartDaysText);
@@ -743,10 +747,10 @@ class Plugin
 						</div>
 
 					<?php
-					$content = ob_get_contents ();
-					ob_end_clean ();
 
 				}
+				$content = ob_get_contents ();
+				ob_end_clean ();
 
 			}
 
@@ -763,8 +767,7 @@ class Plugin
 			$content = ob_get_contents ();
 			ob_end_clean ();
 
-		} // ENDE try {
-
+		}
 
 
 		return $content;
@@ -773,7 +776,7 @@ class Plugin
 
 	#endregion
 
-	public function HTMLHeader() {
+	public function HTMLHeader(): void {
 	?>
 	<div id="vabs-container">
 
@@ -786,8 +789,7 @@ class Plugin
 	<?php
 	}
 
-	public function HTMLFooter(){
-
+	public function HTMLFooter(): void {
 	?>
 				<!-- END MODULE CONTENT -->
 			</div>
@@ -797,7 +799,7 @@ class Plugin
 	<?php
 	}
 
-	public function Run () {
+	public function Run (): void {
 
 		//Add Menu
 		add_action ('admin_menu', [

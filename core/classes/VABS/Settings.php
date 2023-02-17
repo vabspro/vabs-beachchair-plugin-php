@@ -10,7 +10,7 @@ use PDOException;
 class Settings
 {
 
-	const VERSION = "2.0.4";
+	const VERSION = "3.0.0";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';
@@ -198,7 +198,7 @@ class Settings
 	/**
 	 * @return void
 	 */
-	private function CheckSettings() {
+	private function CheckSettings(): void {
 
 		try {
 
@@ -264,77 +264,28 @@ class Settings
 							additionalCalendarStartDays = 0,
 							additionalCalendarStartDaysText = ''";
 
-				if(file_exists ($this->path)){
-					include $this->path;
-					if (!empty($settings)) {
-						$settings = (array)$settings;
 
-						$stm = $conPDO->prepare ($SQL);
-						$stm->bindValue (':apiToken', $settings['apiToken']);
-						$stm->bindValue (':apiClientId', $settings['apiClientId']);
-						$stm->bindValue (':apiURL', $settings['apiURL']);
-						$stm->bindValue (':referrerId', $settings['referrerId'], PDO::PARAM_INT);
-						$stm->bindValue (':dsgvoLink', $settings['dsgvoLink']);
-						$stm->bindValue (':agbLink', $settings['agbLink']);
-						$stm->bindValue (':redirectLink', $settings['redirectLink']);
-						$stm->bindValue (':payPal', $settings['payPal'], PDO::PARAM_INT);
-						$stm->bindValue (':payPalSandbox', $settings['payPalSandbox'], PDO::PARAM_INT);
-						$stm->bindValue (':payPalClientId', $settings['payPalClientId']);
-						$stm->bindValue (':payPalClientSecret', $settings['payPalClientSecret']);
-						$stm->bindValue (':textBeforeBooking', $settings['textBeforeBooking']);
-						$stm->bindValue (':smtpServer', $settings['smtpServer']);
-						$stm->bindValue (':smtpUser', $settings['smtpUser']);
-						$stm->bindValue (':smtpPass', $settings['smtpPass']);
-						$stm->bindValue (':versionNumber', self::VERSION);
-						$stm->bindValue (':debug', $settings['debug'], 1);
-						$stm->bindValue (':additionalCalendarStartDays', $settings['additionalCalendarStartDays'], PDO::PARAM_INT);
-						$stm->bindValue (':additionalCalendarStartDaysText', $settings['additionalCalendarStartDaysText']);
-					}
-				}else{
-					$stm = $conPDO->prepare ($SQL);
-					$stm->bindValue (':apiToken', '');
-					$stm->bindValue (':apiClientId', '');
-					$stm->bindValue (':apiURL', '');
-					$stm->bindValue (':referrerId', 0, PDO::PARAM_INT);
-					$stm->bindValue (':dsgvoLink', '');
-					$stm->bindValue (':agbLink', '');
-					$stm->bindValue (':redirectLink', '');
-					$stm->bindValue (':payPal', 0, PDO::PARAM_INT);
-					$stm->bindValue (':payPalSandbox', 1, PDO::PARAM_INT);
-					$stm->bindValue (':payPalClientId', '');
-					$stm->bindValue (':payPalClientSecret', '');
-					$stm->bindValue (':textBeforeBooking', '');
-					$stm->bindValue (':smtpServer', '');
-					$stm->bindValue (':smtpUser', '');
-					$stm->bindValue (':smtpPass', '');
-					$stm->bindValue (':versionNumber', self::VERSION);
-					$stm->bindValue (':additionalCalendarStartDays', 0, PDO::PARAM_INT);
-					$stm->bindValue (':additionalCalendarStartDaysText', '');
-				}
+				$stm = $conPDO->prepare ($SQL);
+				$stm->bindValue (':apiToken', '');
+				$stm->bindValue (':apiClientId', '');
+				$stm->bindValue (':apiURL', '');
+				$stm->bindValue (':referrerId', 0, PDO::PARAM_INT);
+				$stm->bindValue (':dsgvoLink', '');
+				$stm->bindValue (':agbLink', '');
+				$stm->bindValue (':redirectLink', '');
+				$stm->bindValue (':payPal', 0, PDO::PARAM_INT);
+				$stm->bindValue (':payPalSandbox', 1, PDO::PARAM_INT);
+				$stm->bindValue (':payPalClientId', '');
+				$stm->bindValue (':payPalClientSecret', '');
+				$stm->bindValue (':textBeforeBooking', '');
+				$stm->bindValue (':smtpServer', '');
+				$stm->bindValue (':smtpUser', '');
+				$stm->bindValue (':smtpPass', '');
+				$stm->bindValue (':versionNumber', self::VERSION);
+				$stm->bindValue (':additionalCalendarStartDays', 0, PDO::PARAM_INT);
+				$stm->bindValue (':additionalCalendarStartDaysText', '');
 
 				$stm->execute ();
-
-			}else{
-
-				//Check if new fields are in the database
-				$SQL = "ALTER TABLE `vabs_settings`
-							ADD COLUMN `additionalCalendarStartDays` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0' AFTER `blockBookingText`;";
-				$stm = $conPDO->prepare ($SQL);
-				try {
-					$stm->execute ();
-				}catch(Exception $e){
-					//Do NOTHING as the columns might already be exist
-				}
-
-				//Check if new fields are in the database
-				$SQL = "ALTER TABLE `vabs_settings`
-							ADD COLUMN `additionalCalendarStartDaysText` varchar(500) NULL DEFAULT NULL AFTER `additionalCalendarStartDays`;";
-				$stm = $conPDO->prepare ($SQL);
-				try {
-					$stm->execute ();
-				} catch (Exception $e) {
-					//Do NOTHING as the columns might already be exist
-				}
 
 			}
 

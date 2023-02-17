@@ -110,6 +110,8 @@ jQuery(document).ready(function ($) {
         seasonsOutput: [],
     };
 
+    let beachChairTypeImageBasePath = '';
+
     //Methods
 
     /********
@@ -199,6 +201,37 @@ jQuery(document).ready(function ($) {
         btnRefresh.click(HandleDateChange);
 
         LoadBeachChairTypes();
+
+        //Get System PATHS
+        $.ajax({
+
+            url: directory + "/ajax.php",
+
+            type: "POST",
+
+            data: {
+                method: 'GetConstants',
+            },
+
+            dataType: "json"
+
+        }).done(function () {
+
+            //HideLoadingOverlay();
+
+        }).then(function (response) {
+
+            let error = response.error;
+            if (error != "") {
+                console.log(error);
+            }
+            beachChairTypeImageBasePath = response['BEACHCHAIR_TYPES_BASE_PATH'];
+
+        }).fail(function (error) {
+
+            ShowErrorMessage("Fehler", error);
+
+        });
 
 
     }
@@ -711,12 +744,11 @@ jQuery(document).ready(function ($) {
         if (beachChairTypes.length > 0) {
             for (let i = 0; i < beachChairTypes.length; i++) {
                 if (beachChairTypes[i]['id'] == beachChairTypeId) {
-                    imageUrl = beachChairTypes[i]["picture"] != "" ? beachChairTypes[i]["pictureWebPath"] : '';
+                    imageUrl = beachChairTypes[i]["picture"] != "" ? beachChairTypeImageBasePath + '/' + beachChairTypes[i]["picture"] : '';
                     break;
                 }
             }
         }
-
 
         chairCardHeader.css("background-image", "url(" + imageUrl + ")");
 

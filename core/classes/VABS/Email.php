@@ -16,7 +16,7 @@ class Email
 	 * @param string $filePath
 	 * @param string $fileName
 	 */
-	public static function SendAdminMail (string $body, string $subject = "", string $filePath = "", string $fileName = "") {
+	public static function SendAdminMail (string $body, string $subject = "", string $filePath = "", string $fileName = ""): void {
 
 		ob_start ();
 		Utils::PrintStack (debug_backtrace ());
