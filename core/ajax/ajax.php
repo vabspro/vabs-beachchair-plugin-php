@@ -80,13 +80,10 @@ try {
 		$response = $API->GetReferrer ();
 		$array = json_decode ($response,true );
 		ob_start ();
-		//print_r($array);
 		foreach($array as $element){
-
 			?>
 			<option value="<?php echo $element['id'] ?? 0; ?>" <?php echo $element['id'] == $settingsReferrerId ? "selected" : ""; ?>><?php echo $element['name'] ?? 'n/a'; ?></option>
 			<?php
-
 		}
 		$content = ob_get_contents ();
 		ob_end_clean ();

@@ -12,6 +12,7 @@ jQuery(document).ready(function ($) {
     let globalStartDateFormatted = '';
     let globalEndDate = '';
     let globalEndDateFormatted = '';
+    let globalDate = [];
 
     let map = null;
     let mapOutput = '';
@@ -65,6 +66,7 @@ jQuery(document).ready(function ($) {
         beachChairTypeName: '',
         locationId: '',
         beachChairLocationName: '',
+        beachRowId: '',
         beachRowName: '',
         rowDirection: '',
         rowDirectionName: '',
@@ -75,6 +77,7 @@ jQuery(document).ready(function ($) {
         unitPrice: '',
         bookable: '',
         seasonsOutput: [],
+        priceCalculation: {seasons:[]},
     };
     let seasonsOutputTemplate = {
 
@@ -98,6 +101,7 @@ jQuery(document).ready(function ($) {
         beachChairTypeName: '',
         locationId: '',
         beachChairLocationName: '',
+        beachRowId: '',
         beachRowName: '',
         rowDirection: '',
         rowDirectionName: '',
@@ -108,6 +112,7 @@ jQuery(document).ready(function ($) {
         unitPrice: '',
         bookable: '',
         seasonsOutput: [],
+        priceCalculation: {seasons: []},
     };
 
     let beachChairTypeImageBasePath = '';
@@ -121,6 +126,8 @@ jQuery(document).ready(function ($) {
     let addDays = 0;
 
     let Init = function () {
+
+        console.log("Init");
 
         $.ajax({
 
@@ -177,6 +184,8 @@ jQuery(document).ready(function ($) {
                         dateFrom.val(dateStr + " bis " + dateStr);
                         dates = [dates[0], dates[1]];
                     }
+
+                    globalDate = dates;
 
                     HandleDateChange(dates); //dates will be an object date
 
@@ -278,8 +287,11 @@ jQuery(document).ready(function ($) {
             if (dates.length === 2) {
                 globalStartDate = dates[0];
                 globalEndDate = dates[1];
+            }else if(globalDate.length === 2){
+                globalStartDate = globalDate[0];
+                globalEndDate = globalDate[1];
             }else{
-                throw 'Das Datum scheint nicht im richtigen Format übergeben wurden zu sein';
+                throw "Es wurde noch kein Datum gewählt";
             }
 
             SetModus('normal');
@@ -409,6 +421,7 @@ jQuery(document).ready(function ($) {
 
         } catch (error) {
 
+            console.log(error);
             ShowErrorMessage("Fehler", error);
 
         }
@@ -480,14 +493,24 @@ jQuery(document).ready(function ($) {
                                 for (let i = 0; i < allBeachChairs.length; i++) {
 
                                     //As we already choosed a location we can display the name of the location in the leaf let map
+                                    // this needs to be done only once
+                                    if(i == 0) {
+                                        vabs__flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
+                                    }
 
-                                    vabs__flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
+                                    //if the chair is active and online we can iterate through the free beach chairs otherwise we skip the look
+                                    if (allBeachChairs[i].active === 1 && allBeachChairs[i].online === 1) {
 
-                                    for (let j = 0; j < freeBeachChairs.length; j++) {
+                                        //Now we walk through the free beach chairs and check if the id of current beach chair from the upon loop is in the list of free beach chairs
+                                        for (let j = 0; j < freeBeachChairs.length; j++) {
 
-                                        if (Number(allBeachChairs[i].id) === Number(freeBeachChairs[j].id)) {
-                                            bookableChairs.push(allBeachChairs[i]);
-                                            break;
+
+                                            //If the id of the current beach chair is in the list of free beach chairs we add it to the bookable chairs
+                                            if (Number(allBeachChairs[i].id) === Number(freeBeachChairs[j].id)) {
+                                                bookableChairs.push(allBeachChairs[i]);
+                                                break;
+                                            }
+
                                         }
 
                                     }
@@ -532,17 +555,23 @@ jQuery(document).ready(function ($) {
 
                                     success: function (response3) {
 
-                                        //let error = response3.error;
                                         rows = response3.data;
 
+                                        //Assign all chairs to the consolidated array and filter out later on
                                         let consolidatedChairs = allBeachChairs;
 
+                                        //Create an empty template for the currentBeachChair
                                         let currentBeachChair = Object.create(chairTemplate);
+                                        //Now we run through all beachChairs and checking if they are bookable
                                         for (let k = 0; k < bookableChairs.length; k++) {
 
+                                            //Get a single chair from the bookable chairs and assign it to the current chair
                                             currentBeachChair = bookableChairs[k];
+                                            //Gets the id of the current chair
                                             let id = Number(currentBeachChair.id);
+                                            //Gets the index of the current chair in the consolidated chairs array
                                             let index = consolidatedChairs.findIndex(x => x.id === id);
+                                            //Mark the consolidated chair as bookable
                                             consolidatedChairs[index]['bookable'] = 1;
 
                                         }
@@ -550,6 +579,8 @@ jQuery(document).ready(function ($) {
                                         let directionClass;
                                         let bookableClass;
                                         let isBookable;
+                                        let isOnline;
+                                        let isActive;
                                         let chairId;
                                         let dataId;
                                         let indexShoppingCart = -1;
@@ -558,27 +589,35 @@ jQuery(document).ready(function ($) {
                                         let orderId = 0; //1 => left 2 = right
                                         mapOutput = '';
 
+                                        //Run through all rows
                                         for (let r = 0; r < rows.length; r++) {
 
+                                            //Get the beach chair starting position (L2R or R2L) and assign it to an css class
                                             directionClass = directions[rows[r].direction];
+                                            //Get the order id (1 = count from left, 2 = count from right)
                                             orderId = rows[r].orderId;
-                                            console.log(rows[r]);
                                             mapOutput += '<div class="flexRow ' + directionClass + ' flexRowDrawed">';
 
+                                            //Based on the order id we sort the chairs particular for that the row
                                             if (orderId == 1) {
                                                 consolidatedChairs.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
                                             } else {
                                                 consolidatedChairs.sort((a, b) => parseFloat(b.name) - parseFloat(a.name));
                                             }
 
+                                            //Now we run through all beachChairs and assign their position in the row
                                             for (let c = 0; c < consolidatedChairs.length; c++) {
 
-                                                if (Number(consolidatedChairs[c]['beachRow']) === Number(rows[r]['id'])) {
+                                                if (Number(consolidatedChairs[c]['beachRowId']) === Number(rows[r]['id'])) {
 
                                                     currentBeachChair = consolidatedChairs[c];
 
+                                                    isActive = currentBeachChair.active;
+                                                    isOnline = currentBeachChair.online;
                                                     isBookable = currentBeachChair.bookable;
                                                     bookableClass = Number(isBookable) === 1 ? '' : ' booked';
+                                                    bookableClass = Number(isOnline) === 1 ? bookableClass : ' offline';
+                                                    bookableClass = Number(isActive) === 1 ? bookableClass : ' inactive';
                                                     bookableValue = isBookable ? 1 : 0; //as bookable value in the result could be undefined!
 
                                                     chairId = currentBeachChair.id;
@@ -589,18 +628,22 @@ jQuery(document).ready(function ($) {
                                                     mapOutput +=
                                                         '<div ' +
                                                         'id="beachChair_' + currentBeachChair.id + '" ' +
+                                                        'title="' + bookableClass + '" ' +
                                                         'class="flexChair' + bookableClass + '" ' +
                                                         'data-id="' + currentBeachChair.id + '" ' +
                                                         'data-name="' + currentBeachChair.name + '" ' +
                                                         'data-beachChairTypeId="' + currentBeachChair.beachChairTypeId + '" ' +
                                                         'data-beachChairTypeName="' + currentBeachChair.beachChairTypeName + '" ' +
                                                         'data-beachChairLocationName="' + currentBeachChair.beachChairLocationName + '" ' +
+                                                        'data-beachRowId="' + currentBeachChair.beachRowId + '" ' +
                                                         'data-beachRowName="' + currentBeachChair.beachRowName + '" ' +
                                                         'data-dateFrom="' + globalStartDate.yyyymmdd() + '" ' +
                                                         'data-dateTo="' + globalEndDate.yyyymmdd() + '" ' +
                                                         'data-dateFromFormatted="' + globalStartDateFormatted + '" ' +
                                                         'data-dateToFormatted="' + globalEndDateFormatted + '" ' +
                                                         'data-unitPrice="' + currentBeachChair.unitPrice + '" ' +
+                                                        'data-isActive="' + isActive + '" ' +
+                                                        'data-isOnline="' + isOnline + '" ' +
                                                         'data-bookable="' + bookableValue + '">' +
                                                         icon +
                                                         '<span class="flexChairNumber">' + currentBeachChair.name + '</span>' +
@@ -1047,6 +1090,8 @@ jQuery(document).ready(function ($) {
 
         for (let i = 0; i < shoppingCart.length; i++) {
             chair = shoppingCart[i];
+            console.log(chair);
+
             lineHtml += '' +
                 '<tr>' +
                 '   <td><b># ' + chair.name + '</b></td>' +
@@ -1055,17 +1100,19 @@ jQuery(document).ready(function ($) {
                 '   <td>' + FormatToPrice(chair.unitPrice) + '</td>' +
                 '</tr>';
 
-            if(chair.seasonsOutput.length > 0){
-                for (let j = 0; j < chair.seasonsOutput.length; j++) {
-                    seasonsOutput = Object.create(seasonsOutputTemplate);
-                    seasonsOutput = chair.seasonsOutput[j];
-                    lineHtml += '' +
-                        '<tr class="seasonDescription">' +
-                        '   <td>&nbsp;</td>' +
-                        '   <td colspan="3">' +
-                        '       ' + seasonsOutput.seasonName + ': ' + seasonsOutput.amountOfDaysBookedInThatSeason + ' x ' + seasonsOutput.singlePrice + ' &euro;</b>' + ' = <b>' + seasonsOutput.seasonPrice + ' &euro;</b>' +
-                        '   </td>' +
-                        '</tr>';
+            if(chair.priceCalculation){
+                if (chair.priceCalculation.seasons) {
+                    for (let j = 0; j < chair.priceCalculation.seasons.length; j++) {
+                        seasonsOutput = Object.create(seasonsOutputTemplate);
+                        seasonsOutput = chair.priceCalculation.seasons[j];
+                        lineHtml += '' +
+                            '<tr class="seasonDescription">' +
+                            '   <td>&nbsp;</td>' +
+                            '   <td colspan="3">' +
+                            '       ' + seasonsOutput.seasonName + ': ' + seasonsOutput.amountOfDaysBookedInThatSeason + ' x ' + seasonsOutput.singlePrice + ' &euro;</b>' + ' = <b>' + seasonsOutput.seasonPrice + ' &euro;</b>' +
+                            '   </td>' +
+                            '</tr>';
+                    }
                 }
             }
 

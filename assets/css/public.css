@@ -156,6 +156,20 @@ textarea {
   opacity: 1;
   cursor: not-allowed;
 }
+
+#vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .flexRow .inactive {
+  background-color: black;
+  color: white;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+#vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .flexRow .offline {
+  background-color: #333;
+  color: white;
+  opacity: 1;
+  cursor: not-allowed;
+}
 #vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .notOnline .flexChair {
   background-color: dimgrey !important;
   color: white;
