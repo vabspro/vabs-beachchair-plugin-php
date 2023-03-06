@@ -158,7 +158,7 @@ textarea {
 }
 
 #vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .flexRow .inactive {
-  background-color: black;
+  background-color: #000;
   color: white;
   opacity: 1;
   cursor: not-allowed;
@@ -166,6 +166,13 @@ textarea {
 
 #vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .flexRow .offline {
   background-color: #333;
+  color: white;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+#vabs__flexMap .vabs__flexContainer .vabs__flexRowContainer .vabs__flexRows .flexRow .blocked {
+  background-color: #666;
   color: white;
   opacity: 1;
   cursor: not-allowed;

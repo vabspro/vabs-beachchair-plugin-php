@@ -62,6 +62,7 @@ jQuery(document).ready(function ($) {
     let chairTemplate = {
         id: 0,
         name: '',
+        pos: 0,
         beachChairTypeId: '',
         beachChairTypeName: '',
         locationId: '',
@@ -76,6 +77,7 @@ jQuery(document).ready(function ($) {
         dateToFormatted: '',
         unitPrice: '',
         bookable: '',
+        beachChairBlockedDates: '',
         seasonsOutput: [],
         priceCalculation: {seasons:[]},
     };
@@ -97,6 +99,7 @@ jQuery(document).ready(function ($) {
     let currentBeachChair = {
         id: 0,
         name: '',
+        pos: 0,
         beachChairTypeId: '',
         beachChairTypeName: '',
         locationId: '',
@@ -111,6 +114,7 @@ jQuery(document).ready(function ($) {
         dateToFormatted: '',
         unitPrice: '',
         bookable: '',
+        beachChairBlockedDates: '',
         seasonsOutput: [],
         priceCalculation: {seasons: []},
     };
@@ -498,12 +502,11 @@ jQuery(document).ready(function ($) {
                                         vabs__flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
                                     }
 
-                                    //if the chair is active and online we can iterate through the free beach chairs otherwise we skip the look
+                                    //if the chair is active and online we can iterate through the free beach chairs otherwise we continue the loop
                                     if (allBeachChairs[i].active === 1 && allBeachChairs[i].online === 1) {
 
-                                        //Now we walk through the free beach chairs and check if the id of current beach chair from the upon loop is in the list of free beach chairs
+                                        //Now we walk through the free beach chairs and check if the id of current beach chair from the loop is in the list of free beach chairs
                                         for (let j = 0; j < freeBeachChairs.length; j++) {
-
 
                                             //If the id of the current beach chair is in the list of free beach chairs we add it to the bookable chairs
                                             if (Number(allBeachChairs[i].id) === Number(freeBeachChairs[j].id)) {
@@ -516,27 +519,6 @@ jQuery(document).ready(function ($) {
                                     }
 
                                 }
-
-                                let selectHtml = '';
-
-                                if (bookableChairs.length > 0) {
-
-                                    selectHtml += '<select id="beachChairSelectDropDown" class="p-3 border bg-light">';
-
-                                    for (let j = 0; j < bookableChairs.length; j++) {
-
-                                        selectHtml += '<option value="' + bookableChairs[j]["id"] + '"> Strandkorb ' + bookableChairs[j]["name"] + ' am ' + bookableChairs[j]["beachChairLocationName"] + ' in Reihe: ' + bookableChairs[j]["beachRowName"] + '</option>)';
-
-                                    }
-
-                                    selectHtml +=
-                                        '</select>';
-
-                                } else {
-                                    ShowErrorMessage('Fehler', 'Leider gibt es im gewählten Strandabschnitt und -Zeitraum keine freien Körbe mehr');
-                                }
-
-                                $('#chairIdSelect').html(selectHtml);
 
                                 let rows;
 
@@ -565,7 +547,7 @@ jQuery(document).ready(function ($) {
                                         //Now we run through all beachChairs and checking if they are bookable
                                         for (let k = 0; k < bookableChairs.length; k++) {
 
-                                            //Get a single chair from the bookable chairs and assign it to the current chair
+                                            //Get the current chair from the bookable chair loop and assign it to the current chair
                                             currentBeachChair = bookableChairs[k];
                                             //Gets the id of the current chair
                                             let id = Number(currentBeachChair.id);
@@ -581,6 +563,7 @@ jQuery(document).ready(function ($) {
                                         let isBookable;
                                         let isOnline;
                                         let isActive;
+                                        let isBlocked;
                                         let chairId;
                                         let dataId;
                                         let indexShoppingCart = -1;
@@ -598,11 +581,11 @@ jQuery(document).ready(function ($) {
                                             orderId = rows[r].orderId;
                                             mapOutput += '<div class="flexRow ' + directionClass + ' flexRowDrawed">';
 
-                                            //Based on the order id we sort the chairs particular for that the row
+                                            //Based on the beach row order id we sort the chairs particular for that the row
                                             if (orderId == 1) {
-                                                consolidatedChairs.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+                                                consolidatedChairs.sort((a, b) => parseFloat(a.pos) - parseFloat(b.pos));
                                             } else {
-                                                consolidatedChairs.sort((a, b) => parseFloat(b.name) - parseFloat(a.name));
+                                                consolidatedChairs.sort((a, b) => parseFloat(b.pos) - parseFloat(a.pos));
                                             }
 
                                             //Now we run through all beachChairs and assign their position in the row
@@ -614,8 +597,11 @@ jQuery(document).ready(function ($) {
 
                                                     isActive = currentBeachChair.active;
                                                     isOnline = currentBeachChair.online;
+                                                    isBlocked = IsBlocked(currentBeachChair.beachChairBlockedDates, globalStartDate, globalEndDate, false);
+
                                                     isBookable = currentBeachChair.bookable;
                                                     bookableClass = Number(isBookable) === 1 ? '' : ' booked';
+                                                    bookableClass = Number(isBlocked) === 1 ? ' blocked' : bookableClass;
                                                     bookableClass = Number(isOnline) === 1 ? bookableClass : ' offline';
                                                     bookableClass = Number(isActive) === 1 ? bookableClass : ' inactive';
                                                     bookableValue = isBookable ? 1 : 0; //as bookable value in the result could be undefined!
@@ -632,6 +618,7 @@ jQuery(document).ready(function ($) {
                                                         'class="flexChair' + bookableClass + '" ' +
                                                         'data-id="' + currentBeachChair.id + '" ' +
                                                         'data-name="' + currentBeachChair.name + '" ' +
+                                                        'data-pos="' + currentBeachChair.pos + '" ' +
                                                         'data-beachChairTypeId="' + currentBeachChair.beachChairTypeId + '" ' +
                                                         'data-beachChairTypeName="' + currentBeachChair.beachChairTypeName + '" ' +
                                                         'data-beachChairLocationName="' + currentBeachChair.beachChairLocationName + '" ' +
@@ -1441,6 +1428,74 @@ jQuery(document).ready(function ($) {
 
     let LogShoppingCart = function () {
         console.log(shoppingCart);
+    }
+
+    let IsBlocked = function (beachChairBlockedDates, globalStartDate, globalEndDate, log = false){
+
+        let blocked = 0;
+
+        if(beachChairBlockedDates.length !== 0){
+            let blockedDateRanges = beachChairBlockedDates.split(',');
+            //check if blocked date is in range
+            for (let i = 0; i < blockedDateRanges.length; i++) {
+
+                let blockedDateRange = blockedDateRanges[i].split('#');
+                //console.log(blockedDateRange);
+                let blockedStartDate = blockedDateRange[0];
+                let blockedEndDate = blockedDateRange[1];
+                LogToConsole({globalStartDate}, log);
+                LogToConsole({globalEndDate}, log);
+                LogToConsole({blockedStartDate}, log);
+                LogToConsole({blockedEndDate}, log);
+
+                //Create Date objects to be able to compare them
+                let blockedStartDateObject = new Date(blockedStartDate);
+                let blockedEndDateObject = new Date(blockedEndDate);
+                let globalStartDateObject = new Date(globalStartDate);
+                let globalEndDateObject = new Date(globalEndDate);
+
+                LogToConsole({blockedStartDateObject}, log);
+                LogToConsole({blockedEndDateObject}, log);
+                LogToConsole({globalStartDateObject}, log);
+                LogToConsole({globalEndDateObject}, log);
+                LogToConsole('-----------------', log);
+
+                if (
+                    //check if global start date is in the range of the blocked start date and blocked end date
+                    (blockedStartDateObject <= globalStartDateObject && globalStartDateObject <= blockedEndDateObject)
+                    ||
+                    //check if global end date is in the range of the blocked start date and blocked end date
+                    (blockedStartDateObject <= globalEndDateObject && globalEndDateObject <= blockedEndDateObject)
+                    ||
+                    //check if blocked start date in the range of the global start date and global end date
+                    (globalStartDateObject <= blockedStartDateObject && blockedStartDateObject <= globalEndDateObject)
+                    ||
+                    //check if blocked end date in the range of the global start date and global end date
+                    (globalStartDateObject <= blockedEndDateObject && blockedEndDateObject <= globalEndDateObject)
+                ) {
+                    LogToConsole('blocked', log);
+                    LogToConsole('-----------------', log);
+                    blocked = 1;
+                }else{
+                    LogToConsole('not blocked', log);
+                    LogToConsole('-----------------', log);
+                }
+
+            }
+
+
+            LogToConsole('not blocked', log);
+            LogToConsole('-----------------', log);
+        }
+
+        return blocked;
+
+    }
+
+    let LogToConsole = function (message, log) {
+        if(log){
+            console.log({message});
+        }
     }
 
     function ShowErrorMessage(title, message, delay = 5) {
