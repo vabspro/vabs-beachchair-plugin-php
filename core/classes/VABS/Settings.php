@@ -10,7 +10,7 @@ use PDOException;
 class Settings
 {
 
-	const VERSION = "3.0.1";
+	const VERSION = "3.0.2";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';
@@ -19,7 +19,6 @@ class Settings
 	public string $dsgvoLink    = '';
 	public string $agbLink      = '';
 	public string $redirectLink = '';
-	public string $path         = PLUGIN_FOLDER_PATH.'/settings.php';
 
 	public int    $payPal             = 0;
 	public int    $payPalSandbox      = 0;

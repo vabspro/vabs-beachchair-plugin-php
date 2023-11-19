@@ -58,10 +58,18 @@ put the stable version, in order to eliminate any doubt.
 
 ## Changelog ##
 
-### 2.04 ###
+### 3.0.2 ###
+
+* show error messages above the send button
+* add show no season "error message" in case someone wants to book a beach chair outside the season
+
+### 3.0.1 ###
+
+* fix removing error messages after successful call was made
+
+### 3.0.0 ###
 
 * implement new VABS API (URL, structure and endpoints)
-* fix removing error messages after successful call was made
 
 
 ### 2.03 ###
