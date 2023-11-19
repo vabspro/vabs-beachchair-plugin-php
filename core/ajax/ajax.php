@@ -154,8 +154,11 @@ try {
 
 		$API                    = new API();
 		$response               = $API->GetBookableLocations ($dateFrom, $dateTo);
-		$responseArray['data']  = json_decode ($response, true);
+		$array = json_decode ($response, true);
+
+		$responseArray['data']  = $array;
 		$responseArray['error'] = $array['error'] ?? '';
+		$responseArray['noseason'] = !empty($array['noseason']);
 
 	}
 
@@ -258,6 +261,16 @@ try {
 	}
 
 	if ($method == "ValidateAndSendOrder") {
+
+		$Settings = new Settings();
+		if (!$Settings->Load ()) {
+			throw new Exception("Einstellungen konnten nicht geladen werden");
+		}
+		$row = $Settings->row;
+		if (!$row instanceof Settings) {
+			throw new Exception("row wasn't instance of Settings");
+		}
+		$referrerId = $row->referrerId;
 
 		$totalAmount = 0;
 		$totalNetAmount = 0;
@@ -378,10 +391,14 @@ try {
 
 			if (empty($dateFrom)) {
 				$message[] = sprintf ("Das Datum Von war leer für Zeile %d", $i);
+			}else if(!Date::ValidateDate ($dateFrom, Date::DATE_FORMAT_SQL_DATE)){
+				$message[] = sprintf ("Das Datum Von war im falschen Format für Zeile %d", $i);
 			}
 
 			if (empty($dateTo)) {
 				$message[] = sprintf ("Das Datum Bis war leer für Zeile %d", $i);
+			} else if (!Date::ValidateDate ($dateTo, Date::DATE_FORMAT_SQL_DATE)) {
+				$message[] = sprintf ("Das Datum Bis war im falschen Format für Zeile %d", $i);
 			}
 
 			//Check, if chairs have already been booked in the meanwhile
@@ -441,7 +458,7 @@ try {
 		#region Create SalesOrderHeader
 
 		$API      = new API();
-		$response = $API->CreateSalesOrderHeader ($contactId,$comment);
+		$response = $API->CreateSalesOrderHeader ($contactId,$comment, $referrerId);
 		$array    = json_decode ($response, true);
 
 		$salesHeaderId = $array['sales_header_id'] ? : 0;
@@ -740,4 +757,3 @@ try {
 } // ENDE try {
 
 echo json_encode ($responseArray);
-

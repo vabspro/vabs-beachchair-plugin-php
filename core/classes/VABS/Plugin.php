@@ -735,8 +735,8 @@ class Plugin
 													<?php
 												}
 												?>
+                                                <div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
 												<button type="button" id="vabs__btnOrderNow" class="button button-primary" style="margin-top: 1rem;">Jetzt kostenpflichtig bestellen!</button>
-												<div class="alert" id="vabs__backendErrorMessage" style="display: none; margin-top: 15px"></div>
 											</div>
 
 										</div>

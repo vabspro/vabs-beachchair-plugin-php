@@ -18,7 +18,7 @@ class API
 	const EP_BEACH_CHAIR_ROW               = '/beachchair/row';
 	const EP_BEACH_CHAIR_PRICE             = '/beachchair/price/%d/%s/%s';
 	const EP_BEACH_CHAIR_LOCATION_BOOKABLE = '/beachchair/location/bookable/%s/%s';
-	const EP_BEACH_CHAIR_LOCATION_FREE     = '/beachchair/free/location/%s/dateFrom/%s/dateTo/%s';
+	const EP_BEACH_CHAIR_LOCATION_FREE     = '/beachchair/free/location/%s/%s/%s';
 	const EP_BEACH_CHAIR_IS_BOOKED         = '/beachchair/booking/isBooked/%d/%s/%s';
 	const EP_BEACH_CHAIR_VACANCY           = '/beachchair/booking/vacancy/%s/%s/location/%s/type/%s';
 	const EP_ACCOUNT_REFERRER              = '/account/referrer';
@@ -119,13 +119,13 @@ class API
 
 		$requestUrl = self::EP_BEACH_CHAIR_LOCATION;
 
-		if (!empty($dateFrom)) {
+		/*if (!empty($dateFrom)) {
 			if (!empty($dateTo)) {
 				$requestUrl .= "/0/".$dateFrom."/".$dateTo;
 			} else {
 				return json_encode (["error" => "dateTo must be provided if dateFrom is provided"]);
 			}
-		}
+		}*/
 
 		return $this->SendGetCurlRequest ($requestUrl);
 
@@ -217,13 +217,16 @@ class API
 	}
 
 	/**
-	 * @param int $contactId
+	 * @param int    $contactId
 	 * @param string $comment
+	 * @param int    $referrerId
+	 *
 	 * @return bool|string
 	 */
-	public function CreateSalesOrderHeader (int $contactId, string $comment): bool|string {
+	public function CreateSalesOrderHeader (int $contactId, string $comment, int $referrerId = 0): bool|string {
 
 		$params = [
+			'referrerId' => $referrerId,
 			'sellto_contact_id' => $contactId,
 			'comment'           => htmlspecialchars (strip_tags ($comment))
 		];
@@ -248,8 +251,8 @@ class API
 			'object_id'       => $id,
 			'object_code'     => $objectCodeId,
 			'quantity'        => $quantity,
-			'date_from'       => $dateFrom,
-			'date_to'         => $dateTo,
+			'dateFrom'       => $dateFrom,
+			'dateTo'         => $dateTo,
 
 		];
 

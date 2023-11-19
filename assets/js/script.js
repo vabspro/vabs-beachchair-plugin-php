@@ -384,40 +384,59 @@ jQuery(document).ready(function ($) {
 
                     }).then(function (response) {
 
+                        console.log(response.data.noSeason);
+
                         let error = response.error;
+                        let noSeason = response.data.noSeason ?? false;
                         let locationsSeasonBookable = response.data.data;
 
                         if (error !== "" || error.length !== 0) {
                             throw error;
                         }
 
-                        if (locationsSeasonBookable.length > 0) {
+                        $('#vabs__locationSelectContainerNormal').hide();
 
-                            output += '<select class="p-3 border bg-light locationId">';
-                            output += '<option value="0" disabled selected>Auswahl Strandabschnitt</option>';
+                        if(noSeason === 1){
 
-                            for (let i = 0; i < length; i++) {
-                                output += '<option value="' + data[i].id + '">' + data[i].name + ' (Saison: ' + data[i]["seasonFromFormatted"] + ' - ' + data[i]["seasonToFormatted"] + ')</option>';
+                            ShowAlertMessage('warning', 'Schade!', 'Leider sind unsere Strandabschnitte im gewählten Zeitraum noch nicht buchbar');
+
+                            return;
+
+                        }else{
+
+                            if (locationsSeasonBookable.length > 0) {
+
+                                output += '<select class="p-3 border bg-light locationId">';
+                                output += '<option value="0" disabled selected>Auswahl Strandabschnitt</option>';
+
+                                for (let i = 0; i < length; i++) {
+                                    output += '<option value="' + data[i].id + '">' + data[i].name + ' (Saison: ' + data[i]["seasonFromFormatted"] + ' - ' + data[i]["seasonToFormatted"] + ')</option>';
+                                }
+
+                                output += '</select>';
+                                $('.locationSelect').html(output);
+
+                                bookableLocationsArray = locationsSeasonBookable;
+
+                                ShowLocationtMap();
+
+                                //Draw MAP
+                                DrawLeafLetMap('vabs__leafLetMap', data, bookableLocationsArray);
+                                map.invalidateSize();
+
+                                SetModus('normal');
+
+                                $('#vabs__locationSelectContainerNormal').show();
+
+                            } else {
+
+                                GetBeachHopping(0, 0);
+
                             }
 
-                            output += '</select>';
-                            $('.locationSelect').html(output);
-
-                            bookableLocationsArray = locationsSeasonBookable;
-
-                            ShowLocationtMap();
-
-                            //Draw MAP
-                            DrawLeafLetMap('vabs__leafLetMap', data, bookableLocationsArray);
-                            map.invalidateSize();
-
-                            SetModus('normal');
-
-                        } else {
-
-                            GetBeachHopping(0, 0);
-
                         }
+
+
 
                     });
 
@@ -435,6 +454,8 @@ jQuery(document).ready(function ($) {
     }
 
     let HandleLocationChange = function () {
+
+        console.log('HandleLocationChange');
 
         locationId = $(this).val();
         flexRow.html('');
@@ -820,6 +841,8 @@ jQuery(document).ready(function ($) {
 
     let GetBeachHopping = function (locationIds, beachChairTypeIds) {
 
+        console.log('GetBeachHopping');
+
         HideAlertMessage();
 
         $.ajax({
@@ -877,6 +900,8 @@ jQuery(document).ready(function ($) {
     }
 
     let LoadBeachHoppingFilters = function () {
+
+        console.log('LoadBeachHoppingFilters');
 
         //Unbind Events from Selects to prevent a call stack miximum issue
         UnBindSelects();
@@ -1266,6 +1291,10 @@ jQuery(document).ready(function ($) {
 
     let AddMarker = function (id, title, lat, lng, seasonFromFormatted, seasonToFormatted, bookableLineArray) {
 
+        //cut the year from the date
+        seasonFromFormatted = seasonFromFormatted.substring(0, 6);
+        seasonToFormatted = seasonToFormatted.substring(0, 6);
+
         let textBookable = '<p><b>' + title + '</b><br>Saison: ' + seasonFromFormatted + '-' + seasonToFormatted + '</p>';
         let textNotBookable = '<p><b>' + title + '</b><br>Saison: ' + seasonFromFormatted + '-' + seasonToFormatted + ' <br><span style="color: red">(In Ihrem Zeitraum nicht buchbar oder ausgebucht)</span></p>';
 
@@ -1381,6 +1410,7 @@ jQuery(document).ready(function ($) {
 
     let HideAlertMessage = function () {
 
+        console.log('HideAlertMessage');
         errorMessage.html('');
 
     }
@@ -1397,6 +1427,7 @@ jQuery(document).ready(function ($) {
     }
 
     let HideErrorMessage = function () {
+        console.log('HideErrorMessage');
         errorMessage.html('');
         errorMessage.hide();
     }
