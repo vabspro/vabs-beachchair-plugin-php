@@ -34,6 +34,7 @@ jQuery(document).ready(function ($) {
     let errorMessage = $('#errorMessage');
     let vabs__bookingContainer = $('#vabs__bookingContainer');
     let node = $('#vabs__bookingContainer'); //Must be declared twice otherwise it wont work :(
+    let loadingNode = $('#vabs__bookingContainer_loading');
     let vabs__chairCardBtnAddToShoppingCart = $('#vabs__chairCardBtnAddToShoppingCart');
     let vabs__chairCardBtnRemoveFromShoppingCart = $('#vabs__chairCardBtnRemoveFromShoppingCart');
     let chairCardHeader = $('.vabs__chair-header');
@@ -42,8 +43,6 @@ jQuery(document).ready(function ($) {
 
     let vabs__shoppingCartList = $('#vabs__shoppingCartList');
     let shoppingCartDateTimeRange = $('#shoppingCartDateTimeRange');
-
-    let btnRefresh = $('#btnRefresh');
 
     //Object-Templates
     let directions = {
@@ -79,7 +78,7 @@ jQuery(document).ready(function ($) {
         bookable: '',
         beachChairBlockedDates: '',
         seasonsOutput: [],
-        priceCalculation: {seasons:[]},
+        priceCalculation: {seasons: []},
     };
     let seasonsOutputTemplate = {
 
@@ -134,6 +133,9 @@ jQuery(document).ready(function ($) {
     let Init = function () {
 
         console.log("Init");
+        node.hide();
+        loadingNode.show();
+
 
         $.ajax({
 
@@ -171,14 +173,13 @@ jQuery(document).ready(function ($) {
                 $('#additionalCalendarStartDate2').text(dateText);
             }
 
+            //Add the date to the datepicker
             flatpickr('.dateFrom', {
                 minDate: date,
                 dateFormat: 'd.m.Y',
                 locale: 'de',
                 mode: "range",
                 onChange: function (dates, dateStr, instance) {
-
-
 
 
                 },
@@ -193,85 +194,85 @@ jQuery(document).ready(function ($) {
 
                     globalDate = dates;
 
-                    HandleDateChange(dates); //dates will be an object date
-
                 }
             });
 
-            node.on('change', '.locationId', HandleLocationChange);
-            node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
-            node.on('click', '.flexChair', HandleMapChairClick);
-            node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
-            node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-            node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
-            node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
-            node.on('click', '#btnLogShoppingCart', LogShoppingCart);
+            $.ajax({
 
-        }).fail(function (error) {
+                url: directory + "/ajax.php",
 
-            ShowErrorMessage("Fehler", error);
+                type: "POST",
 
-        });
+                data: {
+                    method: 'GetBeachChairTypes',
+                },
 
-        btnRefresh.click(HandleDateChange);
+                dataType: "json"
 
-        LoadBeachChairTypes();
+            }).done(function () {
 
-        //Get System PATHS
-        $.ajax({
+                HideLoadingOverlay();
 
-            url: directory + "/ajax.php",
+            }).then(function (response) {
 
-            type: "POST",
+                beachChairTypes = response.data;
 
-            data: {
-                method: 'GetConstants',
-            },
+                //Get System PATHS
+                $.ajax({
 
-            dataType: "json"
+                    url: directory + "/ajax.php",
 
-        }).done(function () {
+                    type: "POST",
 
-            //HideLoadingOverlay();
+                    data: {
+                        method: 'GetConstants',
+                    },
 
-        }).then(function (response) {
+                    dataType: "json"
 
-            let error = response.error;
-            if (error != "") {
-                console.log(error);
-            }
-            beachChairTypeImageBasePath = response['BEACHCHAIR_TYPES_BASE_PATH'];
+                }).done(function () {
 
-        }).fail(function (error) {
+                    //HideLoadingOverlay();
 
-            ShowErrorMessage("Fehler", error);
+                }).then(function (response) {
 
-        });
+                    let error = response.error;
+                    if (error != "") {
+                        console.log(error);
+                    }
+                    beachChairTypeImageBasePath = response['BEACHCHAIR_TYPES_BASE_PATH'];
+
+                    //Finally show the date picker
+                    node.off('change');
+                    node.on('click');
+
+                    node.on('change', '.locationId', HandleLocationChange);
+                    node.on('click', '.vabs__flexBtnBack', ShowLocationtMap);
+                    node.on('click', '.flexChair', HandleMapChairClick);
+                    node.on('click', '.vabs__btnChairClose', CloseBeachChairPopupCard);
+                    node.on('click', '#vabs__chairCardBtnAddToShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+                    node.on('click', '#vabs__chairCardBtnRemoveFromShoppingCart', TriggerAddOrRemoveToOrFromShoppingCart);
+                    node.on('click', '#vabs__btnOrderNow', ValidateAndSendOrder);
+                    node.on('click', '#btnLogShoppingCart', LogShoppingCart);
+
+                    node.on('click', '#btnLogShoppingCart', HandleDateChange);
+                    node.on('click', '#btnRefresh', HandleDateChange);
+
+                    node.show();
+                    loadingNode.hide();
+
+                }).fail(function (error) {
+
+                    ShowErrorMessage("Fehler", error);
+
+                });
 
 
-    }
+            }).fail(function (error) {
 
-    let LoadBeachChairTypes = function () {
+                ShowErrorMessage("Fehler", error);
 
-        $.ajax({
-
-            url: directory + "/ajax.php",
-
-            type: "POST",
-
-            data: {
-                method: 'GetBeachChairTypes',
-            },
-
-            dataType: "json"
-
-        }).done(function () {
-
-            HideLoadingOverlay();
-
-        }).then(function (response) {
-
-            beachChairTypes = response.data;
+            });
 
         }).fail(function (error) {
 
@@ -283,7 +284,14 @@ jQuery(document).ready(function ($) {
 
     //Handles
 
-    let HandleDateChange = function (dates) {
+    let HandleDateChange = function (dates = null) {
+
+        if(dates === null){
+            console.log('dates war null');
+            dates = globalDate;
+        }else{
+            console.log('dates war nicht null');
+        }
 
         HideAlertMessage();
         $('#vacancyList').html('');
@@ -293,10 +301,10 @@ jQuery(document).ready(function ($) {
             if (dates.length === 2) {
                 globalStartDate = dates[0];
                 globalEndDate = dates[1];
-            }else if(globalDate.length === 2){
+            } else if (globalDate.length === 2) {
                 globalStartDate = globalDate[0];
                 globalEndDate = globalDate[1];
-            }else{
+            } else {
                 throw "Es wurde noch kein Datum gewählt";
             }
 
@@ -388,7 +396,7 @@ jQuery(document).ready(function ($) {
 
                         let error = response.error;
                         let noSeason = response.data.noSeason ?? false;
-                        let locationsSeasonBookable = response.data.data;
+                        let bookableLocationArray = response.data.data;
 
                         if (error !== "" || error.length !== 0) {
                             throw error;
@@ -396,32 +404,40 @@ jQuery(document).ready(function ($) {
 
                         $('#vabs__locationSelectContainerNormal').hide();
 
-                        if(noSeason === 1){
+                        if (noSeason === 1) {
 
                             ShowAlertMessage('warning', 'Schade!', 'Leider sind unsere Strandabschnitte im gewählten Zeitraum noch nicht buchbar');
 
                             return;
 
-                        }else{
+                        } else {
 
-                            if (locationsSeasonBookable.length > 0) {
+                            let disabled = false;
+
+                            if (bookableLocationArray.length > 0) {
 
                                 output += '<select class="p-3 border bg-light locationId">';
                                 output += '<option value="0" disabled selected>Auswahl Strandabschnitt</option>';
 
                                 for (let i = 0; i < length; i++) {
-                                    output += '<option value="' + data[i].id + '">' + data[i].name + ' (Saison: ' + data[i]["seasonFromFormatted"] + ' - ' + data[i]["seasonToFormatted"] + ')</option>';
+                                    let from = data[i]["seasonFromFormatted"];
+                                    let to = data[i]["seasonToFormatted"];
+
+                                    //truncate year from the end
+                                    from = from.substring(0, from.length - 5);
+                                    to = to.substring(0, to.length - 5);
+                                    disabled = bookableLocationArray.includes(data[i].id) ? '' : 'disabled';
+
+                                    output += '<option ' + disabled + ' value="' + data[i].id + '">' + data[i].name + ' (Saison: ' + from + ' - ' + to + ')</option>';
                                 }
 
                                 output += '</select>';
                                 $('.locationSelect').html(output);
 
-                                bookableLocationsArray = locationsSeasonBookable;
-
                                 ShowLocationtMap();
 
                                 //Draw MAP
-                                DrawLeafLetMap('vabs__leafLetMap', data, bookableLocationsArray);
+                                DrawLeafLetMap('vabs__leafLetMap', data, bookableLocationArray);
                                 map.invalidateSize();
 
                                 SetModus('normal');
@@ -435,7 +451,6 @@ jQuery(document).ready(function ($) {
                             }
 
                         }
-
 
 
                     });
@@ -521,7 +536,7 @@ jQuery(document).ready(function ($) {
 
                                     //As we already choosed a location we can display the name of the location in the leaf let map
                                     // this needs to be done only once
-                                    if(i == 0) {
+                                    if (i == 0) {
                                         vabs__flexHeadline.html(allBeachChairs[i]['beachChairLocationName']);
                                     }
 
@@ -734,7 +749,7 @@ jQuery(document).ready(function ($) {
         let unitPrice = $(this).attr('data-unitPrice');
         let bookable = $(this).attr('data-bookable');
 
-        if(id != null && Number(id) !== 0 && id != '' && typeof id !== "undefined"){
+        if (id != null && Number(id) !== 0 && id != '' && typeof id !== "undefined") {
 
             //let index = IsInShoppingCart(id);
 
@@ -751,7 +766,7 @@ jQuery(document).ready(function ($) {
                 ShowErrorMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
             }
 
-        }else{
+        } else {
             ShowErrorMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
         }
 
@@ -1114,7 +1129,7 @@ jQuery(document).ready(function ($) {
                 '   <td>' + FormatToPrice(chair.unitPrice) + '</td>' +
                 '</tr>';
 
-            if(chair.priceCalculation){
+            if (chair.priceCalculation) {
                 if (chair.priceCalculation.seasons) {
                     for (let j = 0; j < chair.priceCalculation.seasons.length; j++) {
                         seasonsOutput = Object.create(seasonsOutputTemplate);
@@ -1218,10 +1233,10 @@ jQuery(document).ready(function ($) {
                     //Pay per PayPal
                     if (confirmationUrl) {
                         window.location.replace(confirmationUrl);
-                    //Pay per Invoice
+                        //Pay per Invoice
                     } else if (redirectLink != '') {
                         window.open(redirectLink, '_self');
-                    //Hide Form
+                        //Hide Form
                     } else {
                         vabs__bookingContainer.remove();
                         successMessage.show();
@@ -1280,7 +1295,6 @@ jQuery(document).ready(function ($) {
             AddMarker(beachLocation.id, beachLocation.name, beachLocation.latitude, beachLocation.longitude, beachLocation.seasonFromFormatted, beachLocation.seasonToFormatted, bookableLocationArray);
         });
 
-
         setTimeout(function () {
             window.dispatchEvent(new Event('resize'));
         }, 100);
@@ -1320,7 +1334,7 @@ jQuery(document).ready(function ($) {
                 mearker.closePopup();
             });
 
-        markers.push([lat,lng]);
+        markers.push([lat, lng]);
 
     }
 
@@ -1463,11 +1477,11 @@ jQuery(document).ready(function ($) {
         console.log(shoppingCart);
     }
 
-    let IsBlocked = function (beachChairBlockedDates, globalStartDate, globalEndDate, log = false){
+    let IsBlocked = function (beachChairBlockedDates, globalStartDate, globalEndDate, log = false) {
 
         let blocked = 0;
 
-        if(beachChairBlockedDates.length !== 0){
+        if (beachChairBlockedDates.length !== 0) {
             let blockedDateRanges = beachChairBlockedDates.split(',');
             //check if blocked date is in range
             for (let i = 0; i < blockedDateRanges.length; i++) {
@@ -1509,7 +1523,7 @@ jQuery(document).ready(function ($) {
                     LogToConsole('blocked', log);
                     LogToConsole('-----------------', log);
                     blocked = 1;
-                }else{
+                } else {
                     LogToConsole('not blocked', log);
                     LogToConsole('-----------------', log);
                 }
@@ -1526,27 +1540,9 @@ jQuery(document).ready(function ($) {
     }
 
     let LogToConsole = function (message, log) {
-        if(log){
+        if (log) {
             console.log({message});
         }
-    }
-
-    function ShowErrorMessage(title, message, delay = 5) {
-
-        $('#vabs__backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
-
-        if (title == "Fehler") {
-            $('#vabs__backendErrorMessage').addClass('alert-danger');
-        } else if (title == "Warnung") {
-            $('#vabs__backendErrorMessage').addClass('alert-warning');
-        } else if (title == "Hinweis") {
-            $('#vabs__backendErrorMessage').addClass('alert-info');
-        } else if (title == "Erfolg") {
-            $('#vabs__backendErrorMessage').addClass('alert-success');
-        }
-
-        $('#vabs__backendErrorMessage').show();
-
     }
 
     Init();

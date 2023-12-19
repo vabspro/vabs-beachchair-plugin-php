@@ -10,7 +10,7 @@ use PDOException;
 class Settings
 {
 
-	const VERSION = "3.0.2";
+	const VERSION = "3.0.3";
 
 	public string $apiToken     = '';
 	public string $apiClientId  = '';

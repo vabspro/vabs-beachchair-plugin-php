@@ -550,7 +550,8 @@ class Plugin
 								<div class="alert alert-success" role="alert" id="successMessage" style="display:none;">
 									Das hat geklappt.....
 								</div>
-								<div id="vabs__bookingContainer">
+                                <div id="vabs__bookingContainer_loading"><img src="<?php echo PLUGIN_FOLDER_NAME_WEB; ?>/assets/img/loading.gif" alt="logo" height="100" width="100"> Daten werden geladen.</div>
+								<div id="vabs__bookingContainer" style="display: none;">
 
 									<form id="form" class="row gx-3 gy-2 align-items-center">
 
@@ -585,7 +586,7 @@ class Plugin
 
 											<h3>An- und Abreisetag anklicken!</h3>
 											<input class="flatpickr flatpickr-input dateFrom p-3 border bg-light" placeholder="DD.MM.JJJJ" value="" type="text" readonly="readonly">
-											<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Laden</button>
+											<button type="button" id="btnRefresh" class="button button-success" style="margin-top: 1rem;">Suchen</button>
 											<div id="errorMessage">
 												<!-- via booking Script -->
 											</div>
@@ -746,6 +747,8 @@ class Plugin
 								</div>
 							</div>
 						</div>
+
+                    <div style="font-size: 0.6em;">VABS Plugin Version: <?php echo Settings::VERSION; ?></div>
 
 					<?php
 
