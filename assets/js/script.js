@@ -263,20 +263,20 @@ jQuery(document).ready(function ($) {
 
                 }).fail(function (error) {
 
-                    ShowErrorMessage("Fehler", error);
+                    ShowAlertMessage("Fehler", error);
 
                 });
 
 
             }).fail(function (error) {
 
-                ShowErrorMessage("Fehler", error);
+                ShowAlertMessage("Fehler", error);
 
             });
 
         }).fail(function (error) {
 
-            ShowErrorMessage("Fehler", error);
+            ShowAlertMessage("Fehler", error);
 
         });
 
@@ -348,7 +348,7 @@ jQuery(document).ready(function ($) {
 
             }).fail(function (error) {
 
-                ShowErrorMessage("Fehler", error);
+                ShowAlertMessage("Fehler", error);
 
             }).then(function (response) {
 
@@ -388,7 +388,7 @@ jQuery(document).ready(function ($) {
 
                     }).fail(function (error) {
 
-                        ShowErrorMessage("Fehler", error);
+                        ShowAlertMessage("Fehler", error);
 
                     }).then(function (response) {
 
@@ -462,7 +462,7 @@ jQuery(document).ready(function ($) {
         } catch (error) {
 
             console.log(error);
-            ShowErrorMessage("Fehler", error);
+            ShowAlertMessage("Fehler", error);
 
         }
 
@@ -610,6 +610,8 @@ jQuery(document).ready(function ($) {
                                         let orderId = 0; //1 => left 2 = right
                                         mapOutput = '';
 
+                                        console.log(consolidatedChairs);
+
                                         //Run through all rows
                                         for (let r = 0; r < rows.length; r++) {
 
@@ -694,7 +696,7 @@ jQuery(document).ready(function ($) {
 
                                     },
                                     error: function (error) {
-                                        ShowErrorMessage('Fehler', error);
+                                        ShowAlertMessage('Fehler', error);
                                         HideLoadingOverlay();
                                     }
 
@@ -702,26 +704,26 @@ jQuery(document).ready(function ($) {
 
 
                             } else {
-                                ShowErrorMessage('Fehler', error);
+                                ShowAlertMessage('Fehler', error);
                                 HideLoadingOverlay();
                             }
 
                         },
                         error: function (error) {
-                            ShowErrorMessage('Fehler', error);
+                            ShowAlertMessage('Fehler', error);
                             HideLoadingOverlay();
                         }
 
                     });
 
                 } else {
-                    ShowErrorMessage('Fehler', error);
+                    ShowAlertMessage('Fehler', error);
                     HideLoadingOverlay();
                 }
 
             },
             error: function (error) {
-                ShowErrorMessage('Fehler', error);
+                ShowAlertMessage('Fehler', error);
                 HideLoadingOverlay();
             }
 
@@ -763,11 +765,11 @@ jQuery(document).ready(function ($) {
                 //Remove Chair form Shopping Card, in case someone else has booked in the meanwhile
                 TriggerAddOrRemoveToOrFromShoppingCart();
                 //Show Error message
-                ShowErrorMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
+                ShowAlertMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
             }
 
         } else {
-            ShowErrorMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
+            ShowAlertMessage("Fehler", "Dieser Korb kann nicht gebucht werden.");
         }
 
 
@@ -902,13 +904,13 @@ jQuery(document).ready(function ($) {
 
 
                 } else {
-                    ShowErrorMessage('Fehler', error);
+                    ShowAlertMessage('Fehler', error);
                 }
 
             }
         ).fail(function (error) {
 
-            ShowErrorMessage("Fehler", error);
+            ShowAlertMessage("Fehler", error);
 
         });
 
@@ -991,7 +993,7 @@ jQuery(document).ready(function ($) {
 
         }).fail(function (error) {
 
-            ShowErrorMessage("Fehler", error);
+            ShowAlertMessage("Fehler", error);
 
         });
 
@@ -1091,12 +1093,12 @@ jQuery(document).ready(function ($) {
                             RenderShoppingCart();
 
                         } else {
-                            ShowErrorMessage('Fehler', error);
+                            ShowAlertMessage('Fehler', error);
                         }
 
                     },
                     error: function (error) {
-                        ShowErrorMessage('Fehler', error);
+                        ShowAlertMessage('Fehler', error);
                     }
 
                 });
@@ -1104,7 +1106,7 @@ jQuery(document).ready(function ($) {
             }
 
         } catch (e) {
-            ShowErrorMessage("Fehler", e.message);
+            ShowAlertMessage("Fehler", e.message);
         }
 
     }
@@ -1243,14 +1245,14 @@ jQuery(document).ready(function ($) {
                     }
 
                 } else {
-                    ShowErrorMessage('Fehler', error);
+                    ShowAlertMessage('Fehler', error);
                     button.show();
                     HideLoadingOverlay();
                 }
 
             },
             error: function (error) {
-                ShowErrorMessage('Fehler', error);
+                ShowAlertMessage('Fehler', error);
                 button.show();
             }
 
@@ -1324,7 +1326,7 @@ jQuery(document).ready(function ($) {
                 if (bookable) {
                     $('.locationId').val(id).change();
                 } else {
-                    ShowErrorMessage("Hinweis", "Dieser Strandabschnitt ist nicht buchbar. Bitte wählen Sie einen anderen!");
+                    ShowAlertMessage("Hinweis", "Dieser Strandabschnitt ist nicht buchbar. Bitte wählen Sie einen anderen!");
                 }
             })
             .on('mouseover', function () {
@@ -1363,7 +1365,7 @@ jQuery(document).ready(function ($) {
     let ShowLoadingOverlay = function (message = '') {
 
 
-        var customElement = $("<div>", {
+        let customElement = $("<div>", {
             "css": {
                 //"border": "4px dashed gold",
                 "font-size": "40px",

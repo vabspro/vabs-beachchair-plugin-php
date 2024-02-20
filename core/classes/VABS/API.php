@@ -119,14 +119,6 @@ class API
 
 		$requestUrl = self::EP_BEACH_CHAIR_LOCATION;
 
-		/*if (!empty($dateFrom)) {
-			if (!empty($dateTo)) {
-				$requestUrl .= "/0/".$dateFrom."/".$dateTo;
-			} else {
-				return json_encode (["error" => "dateTo must be provided if dateFrom is provided"]);
-			}
-		}*/
-
 		return $this->SendGetCurlRequest ($requestUrl);
 
 	}

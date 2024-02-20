@@ -280,4 +280,4 @@ jQuery(document).ready(function ($) {
 
     }
 
-});
+})(jquery);
