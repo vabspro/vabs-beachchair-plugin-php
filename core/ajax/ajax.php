@@ -3,22 +3,10 @@
 use DD\Exceptions\ValidationException;
 use DD\Helper\Date;
 use DD\Mailer\Mailer;
-use DD\PayMent\PayPal\PayPalAddress;
-use DD\PayMent\PayPal\PayPalAmount;
-use DD\PayMent\PayPal\PayPalApplicationContext;
-use DD\PayMent\PayPal\PayPalBreakDown;
-use DD\PayMent\PayPal\PayPalItem;
-use DD\PayMent\PayPal\PayPalName;
-use DD\PayMent\PayPal\PayPalOrder;
-use DD\PayMent\PayPal\PayPalPurchaseUnit;
-use DD\PayMent\PayPal\PayPalRequestBody;
-use DD\PayMent\PayPal\PayPalShipping;
-use DD\PayMent\PayPal\PayPalValues;
-use PayPalCheckoutSdk\Core\PayPalHttpClient;
-use PayPalCheckoutSdk\Core\ProductionEnvironment;
-use PayPalCheckoutSdk\Core\SandboxEnvironment;
-use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use PayPalHttp\IOException;
+use DD\PayPal\Header;
+use DD\PayPal\Line;
+use DD\PayPal\Process;
+use DD\PayPal\Contact as PayPalContact;
 use VABS\API;
 use VABS\Contact;
 use VABS\Settings;
@@ -49,17 +37,14 @@ try {
 		$settings->apiURL                          = $_POST['apiURL'] ? : '';
 		$settings->dsgvoLink                       = $_POST['dsgvoLink'] ? : '';
 		$settings->agbLink                         = $_POST['agbLink'] ? : '';
-		$settings->redirectLink                    = $_POST['redirectLink'] ? : '';
+		$settings->successPage                    = $_POST['successPage'] ? : '';
+		$settings->cancelPage                    = $_POST['cancelPage'] ? : '';
 		$settings->textBeforeBooking               = $_POST['textBeforeBooking'] ? : '';
 		$settings->referrerId                      = $_POST['referrerId'] ? (int)$_POST['referrerId'] : 0;
 		$settings->payPal                          = isset($_POST['payPal']) ? (int)$_POST['payPal'] : 0;
 		$settings->payPalSandbox                   = isset($_POST['payPalSandbox']) ? (int)$_POST['payPalSandbox'] : 1;
 		$settings->payPalClientId                  = $_POST['payPalClientId'] ? : '';
 		$settings->payPalClientSecret              = $_POST['payPalClientSecret'] ? : '';
-		$settings->debug                           = $_POST['debug'] == "true" ? 1 : 0;
-		$settings->smtpServer                      = $_POST['smtpServer'] ? : '';
-		$settings->smtpUser                        = $_POST['smtpUser'] ? : '';
-		$settings->smtpPass                        = $_POST['smtpPass'] ? : '';
 		$settings->blockBookingEnabled             = $_POST['blockBookingEnabled'] ? : 0;
 		$settings->blockBookingFrom                = $_POST['blockBookingFrom'] ? Date::FormatDateToFormat ($_POST['blockBookingFrom'], Date::DATE_FORMAT_SQL_DATE) : '';
 		$settings->blockBookingTo                  = $_POST['blockBookingTo'] ? Date::FormatDateToFormat ($_POST['blockBookingTo'], Date::DATE_FORMAT_SQL_DATE) : '';
@@ -373,6 +358,7 @@ try {
 
 		//Lines
 		$i=0;
+		$chairNames = [];
 		foreach ($lines as $line){
 
 			$i++;
@@ -412,6 +398,7 @@ try {
 				$message[] = sprintf ("Sorry, aber der Korb %s wurde in der Zwischenzeit bereits gebucht.", $chairName);
 
 			}
+			$chairNames[] = $chairName;
 
 		}
 
@@ -472,6 +459,8 @@ try {
 
 		#region Create SalesOrderLines
 
+		$createdSalesLines = [];
+        $i=0;
 		foreach ($lines as $line) {
 
 			$quantity = 1;
@@ -498,6 +487,14 @@ try {
 			$taxamount      = $unitPrice - $netAmount;
 			$totalTaxAmount += $taxamount;
 
+			$createdSalesLines[] = [
+				'taxPercent'  => $tax,
+				'taxAmount'   => $unitPrice - ($unitPrice / (1 + ($tax / 100))),
+				'netAmount'   => $unitPrice / (1 + ($tax / 100)),
+				'grossAmount' => $unitPrice,
+                'objectName' => $chairNames[$i] ?? 'Strandkorb'
+			];
+            $i++;
 
 		}
 
@@ -530,7 +527,7 @@ try {
 		if(!$row instanceof Settings){
 			throw new Exception("row wasn't instance of Settings");
 		}
-		$responseArray['redirectLink'] = $row->redirectLink ?: '';
+		$responseArray['successPage'] = $row->successPage ?: '';
 
 		#region PAYPAL
 
@@ -546,7 +543,7 @@ try {
 			}
 
 			//Make PayPal Request
-			if ($isSandBox) {
+			/*if ($isSandBox) {
 				$environment = new SandboxEnvironment($row->payPalClientId, $row->payPalClientSecret);
 			} else {
 				$environment = new ProductionEnvironment($row->payPalClientId, $row->payPalClientSecret);
@@ -629,7 +626,7 @@ try {
 			//PayPalApplicationContext
 			$PayPalApplicationContext              = new PayPalApplicationContext();
 			$PayPalApplicationContext->return_url  = $_SESSION['payPalSuccessRedirectLink'] ?: '';
-			$PayPalApplicationContext->cancel_url  = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; //TODO: CANCEL URI needs to be defined
+			$PayPalApplicationContext->cancel_url  = $row->cancelPage;
 			$PayPalApplicationContext->brand_name  = 'VABS-CUSTOMER :: Strandkorbbuchung';
 			$PayPalApplicationContext->user_action = PayPalApplicationContext::PAY_NOW;
 
@@ -691,7 +688,46 @@ try {
 					Mailer::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: 3::StatusCode: ".$e->getMessage ()." Error: ".$e->getMessage (), Mailer::EMAIL_SUBJECT_EXCEPTION);
 				}
 
+			}*/
+
+
+			$PayPal = new Process($Settings->row->payPalClientId, $Settings->row->payPalClientSecret, $Settings->row->payPalSandbox);
+
+			$OrderHeader               = new Header();
+			$OrderHeader->referenceId  = $salesHeaderId;
+			$OrderHeader->currencyCode = 'EUR';
+
+			$Contact = new PayPalContact();
+			$Contact->setFirstName ($firstName);
+			$Contact->setLastName ($lastName);
+			$Contact->setEmail ($email);
+			$Contact->setMobile ($tel);
+			$Contact->setPostCode ($postCode);
+			$Contact->setCity ($city);
+			$Contact->setStreet ($street);
+			$Contact->setNumber ($number);
+			$Contact->setAddress ($address ?? '');
+
+			$items = [];
+			foreach ($createdSalesLines as $item) {
+
+				$PayPalItem              = new Line();
+				$PayPalItem->name        = $item['objectName'] ?? 'Strandkorb';
+				$PayPalItem->quantity    = 1; //IMPORTANT!!!!! We have to change this to the actual quantity
+				$PayPalItem->unitPrice   = $item['netAmount'] ?? 0;
+				$PayPalItem->taxPercent  = $item['taxPercent'] ?? 0;
+				$PayPalItem->description = $item['description'] ?? 'Keine Beschreibung....';
+
+				$items[] = $PayPalItem;
+
 			}
+
+			$PayPal->CreateOrder ($OrderHeader, $Contact, $items, $Settings->row->successPage, $Settings->row->cancelPage ?? '');
+
+			//if all went well we will get back a confirmation url
+			$responseArray['confirmationUrl'] = $PayPal->confirmationUrl ?? '';
+			$responseArray['debug']           = $PayPal->debug;
+
 
 		}
 
@@ -713,38 +749,13 @@ try {
 		}
 		$agbsLink = $row->agbLink;
 		$dsgvoLink = $row->dsgvoLink;
-		$redirectLink = $row->redirectLink;
+		$successPage = $row->successPage;
 
 		if(empty($formType)){
 			throw new Exception("Ein Formular-Art muss schon gewählt werden");
 		}
 
-		$responseArray['data'] = '[generate_vabs_form type="'.$formType.'" agb="'.$row->agbLink.'" datenschutz="'.$row->dsgvoLink.'" redirectLink="'.$row->redirectLink.'"]';
-
-	}
-
-	if ($method == 'SendTestEmail') {
-
-		$responseArray['error'] = "";
-
-		try {
-
-			$smtpServer = $_POST['smtpServer'] ?? '';
-			$smtpUser   = $_POST['smtpUser'] ?? '';
-			$smtpPass   = $_POST['smtpPass'] ?? '';
-			$to         = $_POST['to'] ?? EMAIL_DEVELOPER;
-
-			define ("SMTP_USER", $smtpUser);
-			define ("SMTP_PASS", $smtpPass);
-			define ("SMTP_SERVER", $smtpServer);
-
-			Email::SendAdminMail ("Das ist eine Testmail. Diese wurde von ".$_SERVER['HTTP_HOST']." gesendet");
-
-		} catch(Exception $e) {
-
-			$responseArray['error'] = "Fehler beim Emailversand: " . $e->getMessage ();
-
-		}
+		$responseArray['data'] = '[generate_vabs_form type="'.$formType.'" agb="'.$row->agbLink.'" datenschutz="'.$row->dsgvoLink.'" successPage="'.$row->successPage.'"]';
 
 	}
 

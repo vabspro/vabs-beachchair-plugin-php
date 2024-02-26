@@ -288,8 +288,9 @@ textarea {
 #vabs__personalDataContainer {
   margin-top: 20px;
 }
-#vabs__personalDataContainer input {
+#vabs__personalDataContainer input, #vabs__personalDataContainer textarea {
   width: 100%;
+  font-size: 1.2em;
 }
 
 .form-check-input {

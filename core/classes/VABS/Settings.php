@@ -18,7 +18,7 @@ class Settings
 	public int    $referrerId   = 0;
 	public string $dsgvoLink    = '';
 	public string $agbLink      = '';
-	public string $redirectLink = '';
+	public string $successPage = '';
 
 	public int    $payPal             = 0;
 	public int    $payPalSandbox      = 0;
@@ -26,11 +26,6 @@ class Settings
 	public string $payPalClientSecret = '';
 
 	public string $textBeforeBooking  = '';
-
-	//SMTP
-	public string $smtpServer  = '';
-	public string $smtpUser  = '';
-	public string $smtpPass  = '';
 
 	//Block Booking
 	public int $blockBookingEnabled = 0;
@@ -42,13 +37,13 @@ class Settings
 	public int    $additionalCalendarStartDays     = 0;
 	public string $additionalCalendarStartDaysText = '';
 
-	public int $debug  = 0;
 	/**
 	 * @var mixed
 	 */
 	public        $row;
 	public string $errorMessage = '';
 	public string $versionNumber = '';
+	public string        $cancelPage = '';
 
 	public function __construct () {
 
@@ -75,16 +70,13 @@ class Settings
 						IFNULL(referrerId,0) as referrerId,
 						IFNULL(dsgvoLink,'') as dsgvoLink,
 						IFNULL(agbLink,'') as agbLink,
-						IFNULL(redirectLink,'') as redirectLink,
+						IFNULL(successPage,'') as successPage,
+						IFNULL(cancelPage,'') as cancelPage,
 						IFNULL(payPal,0) as payPal,
 						IFNULL(payPalSandbox,0) as payPalSandbox,
 						IFNULL(payPalClientId,'') as payPalClientId,
 						IFNULL(payPalClientSecret,'') as payPalClientSecret,
 						IFNULL(textBeforeBooking,'') as textBeforeBooking,
-						IFNULL(smtpServer,'') as smtpServer,
-						IFNULL(smtpUser,'') as smtpUser,
-						IFNULL(smtpPass,'') as smtpPass,
-						IFNULL(debug,0) as debug,
 						IFNULL(versionNumber,'') as versionNumber,
 						IFNULL(blockBookingEnabled,0) as blockBookingEnabled,
 						IFNULL(blockBookingFrom,'') as blockBookingFrom,
@@ -93,7 +85,7 @@ class Settings
 						IFNULL(additionalCalendarStartDays,0) as additionalCalendarStartDays,
 						IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText
 					FROM
-						vabs_settings";
+						beach_vabs_settings";
 			$stm = $conPDO->prepare ($SQL);
 			$stm->execute();
 
@@ -134,7 +126,7 @@ class Settings
 			}
 
 			$SQL = "UPDATE  
-						vabs_settings 
+						beach_vabs_settings 
 					SET 
 						apiToken = :apiToken,
 						apiClientId = :apiClientId,
@@ -142,16 +134,13 @@ class Settings
 						referrerId = :referrerId,
 						dsgvoLink = :dsgvoLink,
 						agbLink = :agbLink,
-						redirectLink = :redirectLink,
+						successPage = :successPage,
+						cancelPage = :cancelPage,
 						payPal = :payPal,
 						payPalSandbox = :payPalSandbox,
 						payPalClientId = :payPalClientId,
 						payPalClientSecret = :payPalClientSecret,
 						textBeforeBooking = :textBeforeBooking,
-						smtpServer = :smtpServer,
-						smtpUser = :smtpUser,
-						smtpPass = :smtpPass,
-						debug = :debug,
 						blockBookingEnabled = :blockBookingEnabled,
 						blockBookingFrom = :blockBookingFrom,
 						blockBookingTo = :blockBookingTo,
@@ -165,16 +154,13 @@ class Settings
 			$stm->bindValue (':referrerId', $this->referrerId, PDO::PARAM_INT);
 			$stm->bindValue (':dsgvoLink', $this->dsgvoLink);
 			$stm->bindValue (':agbLink', $this->agbLink);
-			$stm->bindValue (':redirectLink', $this->redirectLink);
+			$stm->bindValue (':successPage', $this->successPage);
+			$stm->bindValue (':cancelPage', $this->cancelPage);
 			$stm->bindValue (':payPal', $this->payPal, PDO::PARAM_INT);
 			$stm->bindValue (':payPalSandbox', $this->payPalSandbox, PDO::PARAM_INT);
 			$stm->bindValue (':payPalClientId', $this->payPalClientId);
 			$stm->bindValue (':payPalClientSecret', $this->payPalClientSecret);
 			$stm->bindValue (':textBeforeBooking', $this->textBeforeBooking);
-			$stm->bindValue (':smtpServer', $this->smtpServer);
-			$stm->bindValue (':smtpUser', $this->smtpUser);
-			$stm->bindValue (':smtpPass', $this->smtpPass);
-			$stm->bindValue (':debug', $this->debug, PDO::PARAM_INT);
 			$stm->bindValue (':blockBookingEnabled', $this->blockBookingEnabled, PDO::PARAM_INT);
 			$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
 			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
@@ -203,28 +189,25 @@ class Settings
 
 			$conPDO = Database::getInstance ();
 
-			$SQL = "SHOW TABLES LIKE 'vabs_settings'";
+			$SQL = "SHOW TABLES LIKE 'beach_vabs_settings'";
 			$stm = $conPDO->prepare ($SQL);
 			$stm->execute ();
 			if($stm->rowCount () == 0){
 
-				$SQL = "CREATE TABLE IF NOT EXISTS `vabs_settings` (
+				$SQL = "CREATE TABLE IF NOT EXISTS `beach_vabs_settings` (
 							`apiToken` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`apiClientId` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`apiURL` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`dsgvoLink` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`agbLink` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`redirectLink` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`successPage` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+							`cancelPage` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`textBeforeBooking` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`referrerId` SMALLINT(6) NULL DEFAULT NULL,
 							`payPal` TINYINT(1) NULL DEFAULT 0,
 							`payPalSandbox` TINYINT(1) NULL DEFAULT 1,
 							`payPalClientId` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`payPalClientSecret` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`debug` TINYINT(1) NULL DEFAULT 0,
-							`smtpServer` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`smtpUser` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-							`smtpPass` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 							`blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 							`blockBookingFrom` DATE NULL,
@@ -237,7 +220,7 @@ class Settings
 				$stm->execute ();
 
 				$SQL = "INSERT INTO 
-							vabs_settings 
+							beach_vabs_settings 
 						SET 
 							apiToken = :apiToken,
 							apiClientId = :apiClientId,
@@ -245,17 +228,14 @@ class Settings
 							referrerId = :referrerId,
 							dsgvoLink = :dsgvoLink,
 							agbLink = :agbLink,
-							redirectLink = :redirectLink,
+							successPage = :successPage,
+							cancelPage = :cancelPage,
 							payPal = :payPal,
 							payPalSandbox = :payPalSandbox,
 							payPalClientId = :payPalClientId,
 							payPalClientSecret = :payPalClientSecret,
 							textBeforeBooking = :textBeforeBooking,
-							smtpServer = :smtpServer,
-							smtpUser = :smtpUser,
-							smtpPass = :smtpPass,
 							versionNumber = :versionNumber,
-							debug = :debug,
 							blockBookingEnabled = 0,
 							blockBookingFrom = '',
 							blockBookingTo = '',
@@ -271,15 +251,13 @@ class Settings
 				$stm->bindValue (':referrerId', 0, PDO::PARAM_INT);
 				$stm->bindValue (':dsgvoLink', '');
 				$stm->bindValue (':agbLink', '');
-				$stm->bindValue (':redirectLink', '');
+				$stm->bindValue (':successPage', '');
+				$stm->bindValue (':cancelPage', '');
 				$stm->bindValue (':payPal', 0, PDO::PARAM_INT);
 				$stm->bindValue (':payPalSandbox', 1, PDO::PARAM_INT);
 				$stm->bindValue (':payPalClientId', '');
 				$stm->bindValue (':payPalClientSecret', '');
 				$stm->bindValue (':textBeforeBooking', '');
-				$stm->bindValue (':smtpServer', '');
-				$stm->bindValue (':smtpUser', '');
-				$stm->bindValue (':smtpPass', '');
 				$stm->bindValue (':versionNumber', self::VERSION);
 				$stm->bindValue (':additionalCalendarStartDays', 0, PDO::PARAM_INT);
 				$stm->bindValue (':additionalCalendarStartDaysText', '');

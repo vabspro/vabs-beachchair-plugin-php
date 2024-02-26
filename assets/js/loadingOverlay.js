@@ -48,7 +48,7 @@
             progressMin: 0,
             progressMax: 100,
             size: 50,
-            maxSize: 120,
+            maxSize: 500,
             minSize: 20,
             direction: "column",
             fade: !0,

@@ -33,7 +33,7 @@ jQuery(document).ready(function ($) {
         let dsgvoLink = $('#dsgvoLink').val();
         let agbLink = $('#agbLink').val();
         let referrerId = $('#referrerId').val();
-        let redirectLink = $('#redirectLink').val();
+        let successPage = $('#successPage').val();
         let payPal = $('#payPal').prop('checked');
         let payPalSandbox = $('#payPalSandbox').prop('checked');
         let payPalClientId = $('#payPalClientId').val();
@@ -42,11 +42,7 @@ jQuery(document).ready(function ($) {
         let zoom = $('#zoom').val();
         let latCenter = $('#latCenter').val();
         let lonCenter = $('#lonCenter').val();
-        let smtpServer = $('#smtpServer').val();
-        let smtpUser = $('#smtpUser').val();
-        let smtpPass = $('#smtpPass').val();
 
-        let debug = $('#debug').prop('checked');
 
         let blockBookingEnabled = $('#blockBookingEnabled').prop('checked');
         let blockBookingFrom = $('#blockBookingFrom').val();
@@ -84,7 +80,7 @@ jQuery(document).ready(function ($) {
                     dsgvoLink: dsgvoLink,
                     agbLink: agbLink,
                     referrerId: referrerId,
-                    redirectLink: redirectLink,
+                    successPage: successPage,
                     payPal: payPal ? 1 : 0,
                     payPalSandbox: payPalSandbox ? 1 : 0,
                     payPalClientId: payPalClientId,
@@ -93,10 +89,6 @@ jQuery(document).ready(function ($) {
                     zoom: zoom,
                     latCenter: latCenter,
                     lonCenter: lonCenter,
-                    smtpServer: smtpServer,
-                    smtpUser: smtpUser,
-                    smtpPass: smtpPass,
-                    debug: debug,
                     blockBookingEnabled: blockBookingEnabled ? 1 : 0,
                     blockBookingFrom: blockBookingFrom,
                     blockBookingTo: blockBookingTo,
@@ -287,7 +279,8 @@ jQuery(document).ready(function ($) {
     function GenerateShortCode () {
 
         let formType = $("input[name='formType']:checked").val();
-        let redirectLink = $("#redirectLink").val();
+        let successPage = $("#successPage").val();
+        let cancelPage = $("#cancelPage").val();
 
         if(formType == 'beachchair_booking' || formType == 'voucher' || formType == 'contact'){
 
@@ -300,7 +293,8 @@ jQuery(document).ready(function ($) {
                 data: {
                     method: "GenerateShortCode",
                     formType: formType,
-                    redirectLink: redirectLink,
+                    successPage: successPage,
+                    cancelPage: cancelPage,
                 },
 
                 dataType: "json",
@@ -356,70 +350,6 @@ jQuery(document).ready(function ($) {
     function HideErrorMessage() {
 
         $('#vabs__backendErrorMessage').hide();
-
-    }
-
-    function SendTestEmail () {
-
-        HideErrorMessage();
-
-        let smtpServer = $('#smtpServer').val();
-        let smtpUser = $('#smtpUser').val();
-        let smtpPass = $('#smtpPass').val();
-        let error = false;
-
-        if(smtpServer != "" && smtpUser != "" && smtpPass != ""){
-
-            try {
-
-                $.ajax({
-
-                    url: directory + "/ajax.php",
-
-                    type: "POST",
-
-                    data: {
-                        method: 'SendTestEmail',
-                        smtpServer: smtpServer,
-                        smtpUser: smtpUser,
-                        smtpPass: smtpPass,
-
-                    },
-
-                    dataType: "json",
-
-                    async: true,
-
-                    success: function (response) {
-
-                        let error = response.error;
-
-                        if (error === "") {
-
-                            ShowErrorMessage("Erfolg", 'Das hat geklappt. Die Email wurde versendet');
-
-                        } else {
-                            ShowErrorMessage("Fehler", error);
-                        }
-
-                    },
-                    error: function (error) {
-                        ShowErrorMessage("Fehler", error);
-                    }
-
-                });
-
-            } catch (e) {
-
-                ShowErrorMessage("Fehler", e.message);
-
-            }
-
-            loading.hide();
-
-        }else{
-            ShowErrorMessage("Fehler", "Du musst alle Felder in der Email Debug Sektion ausfüllen!");
-        }
 
     }
 

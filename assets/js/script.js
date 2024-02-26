@@ -314,8 +314,8 @@ jQuery(document).ready(function ($) {
             $('#vabs__flexMap').hide();
 
             //dates is a date object
-            globalStartDateFormatted = globalStartDate.ddmmyyyy();
-            globalEndDateFormatted = globalEndDate.ddmmyyyy();
+            globalStartDateFormatted = moment(globalStartDate).format('DD.MM.YYYY');
+            globalEndDateFormatted = moment(globalEndDate).format('DD.MM.YYYY');
 
             shoppingCartDateTimeRange.html(globalStartDateFormatted + '-' + globalEndDateFormatted);
 
@@ -664,8 +664,8 @@ jQuery(document).ready(function ($) {
                                                         'data-beachChairLocationName="' + currentBeachChair.beachChairLocationName + '" ' +
                                                         'data-beachRowId="' + currentBeachChair.beachRowId + '" ' +
                                                         'data-beachRowName="' + currentBeachChair.beachRowName + '" ' +
-                                                        'data-dateFrom="' + globalStartDate.yyyymmdd() + '" ' +
-                                                        'data-dateTo="' + globalEndDate.yyyymmdd() + '" ' +
+                                                        'data-dateFrom="' + moment(globalStartDate).format('YYYY-MM-DD') + '" ' +
+                                                        'data-dateTo="' + moment(globalEndDate).format('YYYY-MM-DD') + '" ' +
                                                         'data-dateFromFormatted="' + globalStartDateFormatted + '" ' +
                                                         'data-dateToFormatted="' + globalEndDateFormatted + '" ' +
                                                         'data-unitPrice="' + currentBeachChair.unitPrice + '" ' +
@@ -1227,7 +1227,7 @@ jQuery(document).ready(function ($) {
             success: function (response) {
 
                 let error = response.error;
-                let redirectLink = response.redirectLink;
+                let successPage = response.successPage;
                 let confirmationUrl = response["confirmationUrl"];
 
                 if (error === "") {
@@ -1236,8 +1236,8 @@ jQuery(document).ready(function ($) {
                     if (confirmationUrl) {
                         window.location.replace(confirmationUrl);
                         //Pay per Invoice
-                    } else if (redirectLink != '') {
-                        window.open(redirectLink, '_self');
+                    } else if (successPage != '') {
+                        window.open(successPage, '_self');
                         //Hide Form
                     } else {
                         vabs__bookingContainer.remove();
@@ -1372,7 +1372,7 @@ jQuery(document).ready(function ($) {
                 "text-align": "center",
                 "padding": "0px"
             },
-            "class": "your-custom-class",
+            /*"class": "your-custom-class",*/
             "text": message
         });
 

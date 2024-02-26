@@ -29,11 +29,7 @@ jQuery(document).ready(function ($) {
         };
     }
 
-    let CreateDateFromString = function (dateString, timeString) {
 
-        return CreateDateFromStringWithSourceFormat(dateString, timeString, 'DD.MM.YYYY');
-
-    }
 
     let CreateDateFromStringWithSourceFormat = function (dateString, timeString, sourceFormat) {
 
@@ -262,22 +258,6 @@ jQuery(document).ready(function ($) {
 
     }
 
-    let ShowErrorMessage = function (title, message, delay = 5) {
 
-        $('#vabs__backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
 
-        if (title == "Fehler") {
-            $('#vabs__backendErrorMessage').addClass('alert-danger');
-        } else if (title == "Warnung") {
-            $('#vabs__backendErrorMessage').addClass('alert-warning');
-        } else if (title == "Hinweis") {
-            $('#vabs__backendErrorMessage').addClass('alert-info');
-        } else if (title == "Erfolg") {
-            $('#vabs__backendErrorMessage').addClass('alert-success');
-        }
-
-        $('#vabs__backendErrorMessage').show();
-
-    }
-
-})(jquery);
+})(jQuery);

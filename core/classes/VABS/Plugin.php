@@ -68,14 +68,13 @@ class Plugin
 	#region SCRIPTS
 	public function ScriptsAll (): void {
 
-		wp_enqueue_script ('library', VABS_PLUGIN_PATH.'/assets/js/library.js', $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('bootstrap', "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('flatpickr', VABS_PLUGIN_PATH."/assets/js/flatpickr.js", $this->jquery, Settings::VERSION, true);
 		wp_enqueue_script ('flatpickr-de', VABS_PLUGIN_PATH."/assets/js/flatpickr-de.js", [
 				$this->jquery,
 				'flatpickr'
 		], Settings::VERSION, true);
-		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.min.js', $this->jquery, Settings::VERSION, true);
+		wp_enqueue_script ('moment', VABS_PLUGIN_PATH.'/assets/js/moment.js', $this->jquery, Settings::VERSION, true);
 	}
 
 	public function ScriptsFrontPage (): void {
@@ -289,9 +288,17 @@ class Plugin
 					</div>
 					<div class="form-group row">
 
-						<label for="redirectLink" class="col-sm-2 col-form-label">Erfolgsseite:</label>
+						<label for="successPage" class="col-sm-2 col-form-label">Erfolgsseite:</label>
 						<div class="col-sm-10">
-							<input type="text" class="border bg-light form-control" id="redirectLink" value="<?php echo $row->redirectLink ?? ''; ?>">
+							<input type="text" class="border bg-light form-control" id="successPage" value="<?php echo $row->successPage ?? ''; ?>">
+						</div>
+
+					</div>
+					<div class="form-group row">
+
+						<label for="cancelPage" class="col-sm-2 col-form-label">Abbruchseite:</label>
+						<div class="col-sm-10">
+							<input type="text" class="border bg-light form-control" id="cancelPage" value="<?php echo $row->cancelPage ?? ''; ?>">
 						</div>
 
 					</div>
@@ -313,35 +320,6 @@ class Plugin
 							<select class="border bg-light col-3 form-control" id="referrerId"><!-- via AJAX --></select>
 						</div>
 
-					</div>
-
-					<h3>Email Debug</h3>
-					<div class="form-group row">
-
-						<label for="debug" class="col-sm-2 col-form-label">Einschalten</label>
-						<div class="col-sm-10">
-							<input type="checkbox" class="border bg-light form-control" id="debug" value="1" <?php echo $row->debug == 1 ? "checked" : ""; ?>>
-						</div>
-
-						<label for="smtpServer" class="col-sm-2 col-form-label">Server:</label>
-						<div class="col-sm-10">
-							<input type="text" class="border bg-light form-control" id="smtpServer" value="<?php echo $row->smtpServer ?? ''; ?>">
-						</div>
-
-						<label for="smtpUser" class="col-sm-2 col-form-label">User:</label>
-						<div class="col-sm-10">
-							<input type="text" class="border bg-light form-control" id="smtpUser" value="<?php echo $row->smtpUser ?? ''; ?>">
-						</div>
-
-						<label for="smtpPass" class="col-sm-2 col-form-label">Pass:</label>
-						<div class="col-sm-10">
-							<input type="password" class="border bg-light form-control" id="smtpPass" value="<?php echo $row->smtpPass ?? ''; ?>">
-						</div>
-
-						<label for="btnTestEmail" class="col-sm-2 col-form-label">Test Email:</label>
-						<div class="col-sm-10">
-							<button type="button" class="button button-danger" id="btnTestEmail">TEST</button>
-						</div>
 					</div>
 
 					<div class="form-row align-items-left">
@@ -417,7 +395,6 @@ class Plugin
 			if(!$row instanceof Settings){
 				throw new Exception("row wasn't instance of Settings3");
 			}
-			$debug = $row->debug == 1;
 
 			if ($attributes['type'] == 'beachchair_booking') {
 
@@ -453,12 +430,6 @@ class Plugin
 
 					$isSandBox = (int)$row->payPalSandbox === 1;
 
-					if(!defined ("SMTP_USER")) {
-						define ("SMTP_USER", $row->smtpUser);
-						define ("SMTP_PASS", $row->smtpPass);
-						define ("SMTP_SERVER", $row->smtpServer);
-					}
-
 					if (!empty($token) && !empty($PayerID)) {
 
 						if ($isSandBox) {
@@ -481,11 +452,6 @@ class Plugin
 							$request  = new OrdersGetRequest($token);
 							$response = $client->execute ($request);
 
-							if ($debug) {
-								$var = print_r ($response, true);
-								Email::SendAdminMail ("File: ".__FILE__."<br>Place: Capture<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
-							}
-
 						} catch (HttpException $e) {
 
 							$statusCode = $e->statusCode;
@@ -498,11 +464,6 @@ class Plugin
 									}
 									$request  = new OrdersGetRequest($token);
 									$response = $client->execute ($request);
-
-									if ($debug) {
-										$var = print_r ($response, true);
-										Email::SendAdminMail ("File: ".__FILE__."<br>Place: Already Captured<br>Response: ".$var, Mailer::EMAIL_SUBJECT_DEBUG);
-									}
 
 									$captureId = $response->result->purchase_units[0]->payments->captures[0]->id ?? '';
 
@@ -523,11 +484,7 @@ class Plugin
 								$API = new API();
 								$API->AddPayment ($salesInvoiceId, $salesHeaderId, 4, $token, $PayerID, $captureId);
 								$API->SendInvoice ($salesHeaderId);
-								echo "<script type=\"text/javascript\">window.location = '".$row->redirectLink."';</script>";
-
-								if ($debug) {
-									Email::SendAdminMail ("File: ".__FILE__."<br>Neue Buchung mit ID: ".$salesHeaderId, Mailer::EMAIL_SUBJECT_DEBUG);
-								}
+								echo "<script type=\"text/javascript\">window.location = '".$row->successPage."';</script>";
 
 							}catch (Exception $e) {
 								echo $e->getMessage ();
@@ -538,7 +495,6 @@ class Plugin
 						} else {
 							$errorMessage = "Capture ID was empty or couldn't get";
 							Log::Log ($errorMessage);
-							Email::SendAdminMail ("File: ".__FILE__."<br>ErrorMessage: ".$errorMessage, Mailer::EMAIL_SUBJECT_DEBUG);
 						}
 
 					}
@@ -761,7 +717,6 @@ class Plugin
 		} catch (Exception $e) {
 
 			$message = $e->getMessage ();
-			Email::SendAdminMail ("File: ".__FILE__."<br> Method:".__FUNCTION__." <br>Line: ".__LINE__." Error: ".$message, Mailer::EMAIL_SUBJECT_EXCEPTION);
 			ob_start ();
 			?>
 			<div class="alert alert-error" role="alert">
