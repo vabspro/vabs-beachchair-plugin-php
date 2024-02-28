@@ -1,7 +1,7 @@
 jQuery(document).ready(function ($) {
 
     //Declare Variables
-    let directory = '/wp-content/plugins/vabs-wp-plugin/core/ajax';
+    let url = '/wp-content/plugins/vabs-beach-plugin/App/ajax.php';
 
     let allBeachChairs = [];
     let freeBeachChairs = [];
@@ -139,7 +139,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -199,7 +199,7 @@ jQuery(document).ready(function ($) {
 
             $.ajax({
 
-                url: directory + "/ajax.php",
+                url: url,
 
                 type: "POST",
 
@@ -220,7 +220,7 @@ jQuery(document).ready(function ($) {
                 //Get System PATHS
                 $.ajax({
 
-                    url: directory + "/ajax.php",
+                    url: url,
 
                     type: "POST",
 
@@ -330,7 +330,7 @@ jQuery(document).ready(function ($) {
 
             $.ajax({
 
-                url: directory + "/ajax.php",
+                url: url,
 
                 type: "POST",
 
@@ -368,7 +368,7 @@ jQuery(document).ready(function ($) {
 
                     $.ajax({
 
-                        url: directory + "/ajax.php",
+                        url: url,
 
                         type: "POST",
 
@@ -407,8 +407,6 @@ jQuery(document).ready(function ($) {
                         if (noSeason === 1) {
 
                             ShowAlertMessage('warning', 'Schade!', 'Leider sind unsere Strandabschnitte im gewählten Zeitraum noch nicht buchbar');
-
-                            return;
 
                         } else {
 
@@ -480,7 +478,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -506,7 +504,7 @@ jQuery(document).ready(function ($) {
 
                     $.ajax({
 
-                        url: directory + "/ajax.php",
+                        url: url,
 
                         type: "POST",
 
@@ -562,7 +560,7 @@ jQuery(document).ready(function ($) {
 
                                 $.ajax({
 
-                                    url: directory + "/ajax.php",
+                                    url: url,
 
                                     type: "POST",
 
@@ -864,7 +862,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -929,7 +927,7 @@ jQuery(document).ready(function ($) {
         //Locations
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -1063,7 +1061,7 @@ jQuery(document).ready(function ($) {
                 //Get Price
                 $.ajax({
 
-                    url: directory + "/ajax.php",
+                    url: url,
 
                     type: "POST",
 
@@ -1209,7 +1207,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 

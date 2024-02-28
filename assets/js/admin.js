@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
 
-    let directory = '/wp-content/plugins/vabs-wp-plugin/core/ajax';
+    let url = '/wp-content/plugins/vabs-beach-plugin/App/ajax.php';
 
     /////////////////
     /// Settings ////
@@ -9,7 +9,6 @@ jQuery(document).ready(function ($) {
     //Variables
     let error = false;
     let btnSave = $('#btnSave');
-    let btnTestEmail = $('#btnTestEmail');
     let btnLoadAGBS = $('#btnLoadAGBS');
     let btnLoadDSGVO = $('#btnLoadDSGVO');
     let responseNode = $('#response');
@@ -17,7 +16,6 @@ jQuery(document).ready(function ($) {
 
     //Events
     btnSave.click(SaveSettings);
-    btnTestEmail.click(SendTestEmail);
     btnLoadAGBS.click(LoadAGBS);
     btnLoadDSGVO.click(LoadDSGVO);
 
@@ -34,6 +32,7 @@ jQuery(document).ready(function ($) {
         let agbLink = $('#agbLink').val();
         let referrerId = $('#referrerId').val();
         let successPage = $('#successPage').val();
+        let cancelPage = $('#cancelPage').val();
         let payPal = $('#payPal').prop('checked');
         let payPalSandbox = $('#payPalSandbox').prop('checked');
         let payPalClientId = $('#payPalClientId').val();
@@ -68,7 +67,7 @@ jQuery(document).ready(function ($) {
 
             $.ajax({
 
-                url: directory + "/ajax.php",
+                url: url,
 
                 type: "POST",
 
@@ -81,6 +80,7 @@ jQuery(document).ready(function ($) {
                     agbLink: agbLink,
                     referrerId: referrerId,
                     successPage: successPage,
+                    cancelPage: cancelPage,
                     payPal: payPal ? 1 : 0,
                     payPalSandbox: payPalSandbox ? 1 : 0,
                     payPalClientId: payPalClientId,
@@ -106,7 +106,6 @@ jQuery(document).ready(function ($) {
                 success: function (response) {
 
                     let error = response.error;
-                    let data = response.data;
 
                     if (error === "") {
 
@@ -138,7 +137,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -180,7 +179,7 @@ jQuery(document).ready(function ($) {
 
         $.ajax({
 
-            url: directory + "/ajax.php",
+            url: url,
 
             type: "POST",
 
@@ -226,7 +225,7 @@ jQuery(document).ready(function ($) {
 
             $.ajax({
 
-                url: directory + "/ajax.php",
+                url: url,
 
                 type: "POST",
 
@@ -286,7 +285,7 @@ jQuery(document).ready(function ($) {
 
             $.ajax({
 
-                url: directory + "/ajax.php",
+                url: url,
 
                 type: "POST",
 
@@ -329,21 +328,23 @@ jQuery(document).ready(function ($) {
 
     }
 
-    function ShowErrorMessage(title, message, delay = 5) {
+    function ShowErrorMessage(title, message) {
 
-        $('#vabs__backendErrorMessage').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
+        let vabs__backendErrorMessage = $('#vabs__backendErrorMessage');
+
+        vabs__backendErrorMessage.removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').removeClass('alert-info').html(message);
 
         if (title == "Fehler") {
-            $('#vabs__backendErrorMessage').addClass('alert-danger');
+            vabs__backendErrorMessage.addClass('alert-danger');
         } else if (title == "Warnung") {
-            $('#vabs__backendErrorMessage').addClass('alert-warning');
+            vabs__backendErrorMessage.addClass('alert-warning');
         } else if (title == "Hinweis") {
-            $('#vabs__backendErrorMessage').addClass('alert-info');
+            vabs__backendErrorMessage.addClass('alert-info');
         }else if (title == "Erfolg") {
-            $('#vabs__backendErrorMessage').addClass('alert-success');
+            vabs__backendErrorMessage.addClass('alert-success');
         }
 
-        $('#vabs__backendErrorMessage').show();
+        vabs__backendErrorMessage.show();
 
     }
 
@@ -353,7 +354,7 @@ jQuery(document).ready(function ($) {
 
     }
 
-    let fp = flatpickr('#blockBookingFrom,#blockBookingTo', {
+    flatpickr('#blockBookingFrom,#blockBookingTo', {
         dateFormat: 'd.m.Y',
         locale: 'de',
     });

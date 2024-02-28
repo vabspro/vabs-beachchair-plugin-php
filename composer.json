@@ -1,6 +1,6 @@
 {
   "require": {
-    "drechsler-development/wordpress-paypal-client": "v1.3",
+    "drechsler-development/wordpress-paypal-client": "v1.6",
     "chillerlan/php-qrcode": "dev-main",
     "dompdf/dompdf": "^1.0",
     "ext-json": "*",
@@ -21,13 +21,8 @@
     "ext-soap": "*"
   },
   "autoload": {
-    "psr-0": {
-      "": [
-        "core/classes"
-      ]
-    },
-    "classmap": [
-      "core/classes"
-    ]
+    "psr-4": {
+      "VABS\\": "App/"
+    }
   }
 }

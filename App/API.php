@@ -33,30 +33,22 @@ class API
 	#endregion
 
 	#region PRIVATE PROPERTIES
-	private string $apiURL      = '';
-	private string $apiToken    = '';
-	private string $apiClientId = '';
-	private array  $header      = [];
+	private string $apiURL;
+	private string $apiToken;
+	private string $apiClientId;
+	private array  $header;
 	#endregion
 
 	/**
 	 * @throws Exception
 	 */
-	public function __construct () {
+	public function __construct (string $apiURL, string $apiToken, string $apiClientId = '') {
 
-		$Settings = new Settings();
-		if (!$Settings->Load ()) {
-			throw new Exception("Settings could not be loaded. Error: ".$Settings->errorMessage);
-		}
-		$row = $Settings->row;
-		if (!$row instanceof Settings) {
-			throw new Exception("row wasn't instance of Settings");
-		}
-		$this->apiToken    = $row->apiToken ?? '';
-		$this->apiClientId = $row->apiClientId ?? '';
-		$this->apiURL      = $row->apiURL ?? '';
+		$this->apiToken    = $apiToken;
+		$this->apiURL      = $apiURL;
+		$this->apiClientId = $apiClientId ?? '';
 
-		$this->header = ['Token: '.$this->apiToken];
+		$this->header = ['Token: ' . $this->apiToken];
 
 	}
 
@@ -111,11 +103,9 @@ class API
 	}
 
 	/**
-	 * @param string $dateFrom
-	 * @param string $dateTo
 	 * @return string
 	 */
-	public function GetLocations (string $dateFrom = "", string $dateTo = ""): string {
+	public function GetLocations (): string {
 
 		$requestUrl = self::EP_BEACH_CHAIR_LOCATION;
 
@@ -202,7 +192,7 @@ class API
 	 * @param Contact $Contact
 	 * @return bool|string
 	 */
-	public function CreateContact (Contact $Contact): bool|string {
+	public function PostContact (Contact $Contact): bool|string {
 
 		return $this->SendPostCurlRequest (self::EP_CONTACT, (array)$Contact);
 
@@ -215,7 +205,7 @@ class API
 	 *
 	 * @return bool|string
 	 */
-	public function CreateSalesOrderHeader (int $contactId, string $comment, int $referrerId = 0): bool|string {
+	public function PostSalesOrderHeader (int $contactId, string $comment, int $referrerId = 0): bool|string {
 
 		$params = [
 			'referrerId' => $referrerId,
@@ -236,7 +226,7 @@ class API
 	 * @param string $dateTo
 	 * @return bool|string
 	 */
-	public function CreateSalesOrderLine (int $salesHeaderId, int $id, int $quantity, int $objectCodeId, string $dateFrom, string $dateTo): bool|string {
+	public function PostSalesOrderLine (int $salesHeaderId, int $id, int $quantity, int $objectCodeId, string $dateFrom, string $dateTo): bool|string {
 
 		$params = [
 			'sales_header_id' => $salesHeaderId,
@@ -256,7 +246,7 @@ class API
 	 * @param int $salesHeaderId
 	 * @return bool|string
 	 */
-	public function CreateSalesInvoice (int $salesHeaderId): bool|string {
+	public function PostSalesInvoice (int $salesHeaderId): bool|string {
 
 		$params = [
 			'sales_header_id' => $salesHeaderId
@@ -285,15 +275,16 @@ class API
 	}
 
 	/**
-	 * @param int $salesInvoiceId
-	 * @param string $totalAmountFormatted
-	 * @param int $paymentMethodId
+	 * @param int    $salesInvoiceId
+	 * @param int    $salesHeaderId
+	 * @param int    $paymentMethodId
 	 * @param string $token
 	 * @param string $PayerID
 	 * @param string $captureId
+	 *
 	 * @return bool|string
 	 */
-	public function AddPayment (int $salesInvoiceId, int $salesHeaderId, int $paymentMethodId, string $token, string $PayerID, string $captureId): bool|string {
+	public function AddPayPalPayment (int $salesInvoiceId, int $salesHeaderId, int $paymentMethodId, string $token, string $PayerID, string $captureId): bool|string {
 
 		$params = [
 			'sales_invoice_id'  => $salesInvoiceId,
